@@ -79,6 +79,10 @@ Then add the route. Create `app/<route>/page.tsx`:
 
     import Showcase from "@/components/showcase/Showcase";
     import { myProduct } from "@/lib/showcase/my-product";
+    import { showcaseMetadata } from "@/lib/showcase/metadata";
+
+    // Title and description for link previews, from the settings file.
+    export const metadata = showcaseMetadata(myProduct);
 
     export default function Page() {
       return <Showcase config={myProduct} />;

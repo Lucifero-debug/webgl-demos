@@ -12,7 +12,7 @@ const archivo = Archivo({
 export const metadata: Metadata = {
   title: "Interactive 3D web work",
   description:
-    "Three demonstration builds: a product configurator, a scroll-driven journey, and a clinic site.",
+    "Interactive 3D product pages built in Next.js and React Three Fiber, designed to stay fast on a phone.",
 };
 
 export default function RootLayout({
