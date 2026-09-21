@@ -13,6 +13,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import gsap from "gsap";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { applyLens, dwell } from "@/lib/stage/lens";
 import { runtime } from "@/lib/showcase/runtime";
 import type {
   Colorway,
@@ -29,12 +30,6 @@ import type {
 
 /** Where the shadow plane sits. The product's base rests just above it. */
 const FOOT_Y = -0.28;
-/**
- * The screen shape the demo's shots were framed on. Landscape screens
- * narrower than this widen the lens to keep the same horizontal coverage,
- * so the product keeps its share of the width and stays clear of the text.
- */
-const REF_ASPECT = 2.07;
 const TAU = Math.PI * 2;
 
 /* Motion. Small numbers on purpose: alive, not busy. */
@@ -81,38 +76,6 @@ function resolve(pair: ShotPair, aspect: number, hero: boolean): Resolved {
   return { pos, target, fov: shot.fov, offset };
 }
 
-function effectiveFov(fov: number, aspect: number) {
-  if (aspect < 1 || aspect >= REF_ASPECT) return fov;
-  const half = THREE.MathUtils.degToRad(fov) / 2;
-  return THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(half) * (REF_ASPECT / aspect)));
-}
-
-/**
- * Field of view plus the lens shift. setViewOffset moves the rendered
- * window across a larger virtual frame, which moves the subject on screen
- * without turning the camera, so perspective stays true and the shift is
- * the same fraction of the frame on every screen size.
- */
-function applyLens(
-  camera: THREE.PerspectiveCamera,
-  fov: number,
-  ox: number,
-  oy: number,
-  width: number,
-  height: number,
-) {
-  camera.fov = effectiveFov(fov, width / height);
-  camera.setViewOffset(width, height, -ox * width, oy * height, width, height);
-}
-
-/**
- * Holds still near each shot and moves between them: the camera rests on a
- * detail while its text is read, then glides on.
- */
-function dwell(t: number) {
-  const x = THREE.MathUtils.clamp((t - 0.15) / 0.7, 0, 1);
-  return x * x * (3 - 2 * x);
-}
 
 type Controls = {
   enabled: boolean;

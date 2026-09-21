@@ -13,8 +13,8 @@ const demos = [
   },
   {
     href: "/travel",
-    title: "Scroll journey",
-    note: "Procedural terrain with a camera flown along a scroll path.",
+    title: "Travel journey",
+    note: "A photoreal globe you fly across, destination by destination.",
     ready: false,
   },
   {

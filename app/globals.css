@@ -78,6 +78,9 @@ details > summary::-webkit-details-marker {
 [data-reveal][data-shown="true"] > :nth-child(3) {
   transition-delay: 180ms;
 }
+[data-reveal][data-shown="true"] > :nth-child(4) {
+  transition-delay: 270ms;
+}
 
 /* Scroll cue: a light travelling along a faint line. */
 .scroll-line {
@@ -102,6 +105,37 @@ details > summary::-webkit-details-marker {
   60%,
   100% {
     transform: translateX(100%);
+  }
+}
+
+/*
+  Live indicator: a small dot with a ring pulsing out of it, beside local
+  times that are correct right now. Takes its colour from the text colour.
+*/
+.live-dot {
+  position: relative;
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: currentColor;
+}
+.live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  animation: live-pulse 2s ease-out infinite;
+}
+@keyframes live-pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(2.8);
+    opacity: 0;
   }
 }
 

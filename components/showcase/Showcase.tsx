@@ -1,11 +1,11 @@
 "use client";
 
-import Lenis from "lenis";
 import { lazy, useEffect, useMemo, useState, type CSSProperties } from "react";
 import CanvasStage, { type CameraSetup } from "@/components/CanvasStage";
 import ShotHelper from "@/components/showcase/ShotHelper";
 import { runtime } from "@/lib/showcase/runtime";
 import type { Chapter, Colorway, ShowcaseConfig } from "@/lib/showcase/types";
+import { useReveal, useScrollStory } from "@/lib/stage/useScrollStory";
 
 /**
  * The 3D scene, fetched only when the canvas mounts, after the poster has
@@ -100,8 +100,6 @@ export default function Showcase({ config }: { config: ShowcaseConfig }) {
   const sections = chapters.length + 2;
 
   const [active, setActive] = useState(colorways[0]);
-  const [section, setSection] = useState(0);
-  const [atEnd, setAtEnd] = useState(false);
   const [helper, setHelper] = useState(false);
 
   const camera = useMemo<CameraSetup>(
@@ -120,56 +118,9 @@ export default function Showcase({ config }: { config: ShowcaseConfig }) {
     };
   }, []);
 
-  /*
-    Smooth scrolling, and scroll progress fed to the 3D scene. Lenis still
-    scrolls the real page, so native scroll events and the reveal observer
-    keep working. Skipped for reduced motion and in the shot helper.
-  */
-  useEffect(() => {
-    if (helper) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const lenis = reduce ? null : new Lenis({ autoRaf: true, lerp: 0.085 });
-
-    const update = () => {
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = max > 0 ? window.scrollY / max : 0;
-      runtime.progress = progress;
-      setSection(Math.round(progress * (sections - 1)));
-      setAtEnd(progress > 0.985);
-    };
-
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
-    update();
-
-    return () => {
-      lenis?.destroy();
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
-      runtime.progress = 0;
-    };
-  }, [helper, sections]);
-
-  /*
-    A section's text shows while that section fills at least half the
-    screen. Sections are a screen tall, so exactly one qualifies at a time.
-    intersectionRatio, not isIntersecting, which is true for any overlap.
-  */
-  useEffect(() => {
-    if (helper) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          entry.target
-            .querySelector("[data-reveal]")
-            ?.setAttribute("data-shown", String(entry.intersectionRatio >= 0.5));
-        }
-      },
-      { threshold: [0, 0.5, 1] },
-    );
-    document.querySelectorAll("[data-chapter]").forEach((node) => observer.observe(node));
-    return () => observer.disconnect();
-  }, [helper]);
+  /* Smooth scrolling, progress for the scene, and text reveals. Off in the helper. */
+  const { section, atEnd } = useScrollStory(sections, !helper);
+  useReveal(!helper);
 
   const quiet = section > 0 && section < sections - 1;
   const interactive = helper || atEnd;
