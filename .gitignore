@@ -1,0 +1,16 @@
+node_modules
+.next
+out
+build
+.DS_Store
+*.pem
+npm-debug.log*
+.env*
+!.env.example
+.vercel
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# Raw, unoptimised 3D source files. Only the compressed GLB in
+# public/models should be committed.
+assets-raw/
