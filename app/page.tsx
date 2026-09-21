@@ -15,7 +15,7 @@ const demos = [
     href: "/travel",
     title: "Travel journey",
     note: "A photoreal globe you fly across, destination by destination.",
-    ready: false,
+    ready: true,
   },
   {
     href: "/clinic",
