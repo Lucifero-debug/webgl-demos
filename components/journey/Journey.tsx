@@ -474,11 +474,18 @@ export default function Journey({ config }: { config: JourneyConfig }) {
     Recording mode (?record, then Space): every beat, with time for each
     flight to play and each headline to be read, then the finale's
     interactions: a flick of the globe, a pick, and back home.
+
+    The flights between destinations get the most time: they are this
+    demo's signature, and at the pace of the other beats a 13,000 km flight
+    was over in about a second.
   */
   useDirector(async ({ wait, toBeat }) => {
     await wait(2500);
     for (let i = 1; i < sections; i++) {
-      await toBeat(i, 2600);
+      const last = sections - 1;
+      const flight = i % 2 === 1 && i > 1 && i < last;
+      const ms = flight ? 6000 : i === 1 || i === last ? 4000 : 2600;
+      await toBeat(i, ms);
       await wait(3000);
     }
     await wait(800);

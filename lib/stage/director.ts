@@ -30,7 +30,12 @@ export type Director = {
   drag(el: Element, dx: number, ms?: number): Promise<void>;
 };
 
-const ease = (t: number) => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2);
+/**
+ * A gentle ease in and out. Deliberately softer than a cubic: the scenes
+ * already ease their own camera moves between beats, and a strong ease on
+ * the scroll on top of that squeezed each move into a rush in the middle.
+ */
+const ease = (t: number) => 0.5 - 0.5 * Math.cos(Math.PI * t);
 
 function makeDirector(stopped: () => boolean): Director {
   const frame = () =>
