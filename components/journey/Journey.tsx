@@ -16,6 +16,7 @@ import { anchorKey, beats, explore } from "@/lib/journey/overlay";
 import type { Destination, ItineraryStop, JourneyConfig } from "@/lib/journey/types";
 import { runtime } from "@/lib/showcase/runtime";
 import { localTime, useNow } from "@/lib/stage/clock";
+import { useDirector } from "@/lib/stage/director";
 import { useFrameLoop, usePinned } from "@/lib/stage/pinned";
 import { dwell } from "@/lib/stage/timing";
 import { useScrollStory } from "@/lib/stage/useScrollStory";
@@ -468,6 +469,27 @@ export default function Journey({ config }: { config: JourneyConfig }) {
     setPicked(null);
     explore.request = "home";
   };
+
+  /*
+    Recording mode (?record, then Space): every beat, with time for each
+    flight to play and each headline to be read, then the finale's
+    interactions: a flick of the globe, a pick, and back home.
+  */
+  useDirector(async ({ wait, toBeat }) => {
+    await wait(2500);
+    for (let i = 1; i < sections; i++) {
+      await toBeat(i, 2600);
+      await wait(3000);
+    }
+    await wait(800);
+    explore.lastDrag = performance.now();
+    explore.spin = 0.035;
+    await wait(3000);
+    pick(0);
+    await wait(4200);
+    goHome();
+    await wait(3000);
+  });
 
   // Leaving the finale puts the explorer back to its resting state.
   useEffect(() => {

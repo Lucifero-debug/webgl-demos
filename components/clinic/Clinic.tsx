@@ -5,6 +5,7 @@ import CanvasStage, { type CameraSetup } from "@/components/CanvasStage";
 import type { ClinicConfig, PartKey } from "@/lib/clinic/types";
 import { anchors } from "@/lib/stage/anchors";
 import { useNow, zonedTime } from "@/lib/stage/clock";
+import { useDirector } from "@/lib/stage/director";
 import { useFrameLoop, usePinned } from "@/lib/stage/pinned";
 import { useScrollStory } from "@/lib/stage/useScrollStory";
 
@@ -212,6 +213,16 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
   const { section, settled } = useScrollStory(sections);
   const shows = (index: number) => section === index && settled;
   const now = useNow();
+
+  /* Recording mode (?record, then Space): each beat in turn, at reading pace. */
+  useDirector(async ({ wait, toBeat }) => {
+    await wait(2500);
+    for (let i = 1; i < sections; i++) {
+      await toBeat(i, 2000);
+      await wait(3000);
+    }
+    await wait(1500);
+  });
 
   // Start further out than the opening shot, so the tooth drifts in.
   const camera = useMemo<CameraSetup>(() => ({ position: [3.4, 1.1, 7.2], fov: 26 }), []);

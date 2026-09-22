@@ -139,6 +139,21 @@ details > summary::-webkit-details-marker {
   }
 }
 
+/*
+  Recording mode (?record, see lib/stage/director.ts): no cursor and no
+  scrollbar in the footage. The page performs its own interactions.
+*/
+html.recording,
+html.recording * {
+  cursor: none !important;
+}
+html.recording {
+  scrollbar-width: none;
+}
+html.recording::-webkit-scrollbar {
+  display: none;
+}
+
 /* Lenis smooth scrolling: the rules its own stylesheet would add. */
 html.lenis,
 html.lenis body {

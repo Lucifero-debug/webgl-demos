@@ -5,6 +5,7 @@ import CanvasStage, { type CameraSetup } from "@/components/CanvasStage";
 import ShotHelper from "@/components/showcase/ShotHelper";
 import { runtime } from "@/lib/showcase/runtime";
 import type { Chapter, Colorway, ShowcaseConfig } from "@/lib/showcase/types";
+import { useDirector } from "@/lib/stage/director";
 import { useReveal, useScrollStory } from "@/lib/stage/useScrollStory";
 
 /**
@@ -121,6 +122,34 @@ export default function Showcase({ config }: { config: ShowcaseConfig }) {
   /* Smooth scrolling, progress for the scene, and text reveals. Off in the helper. */
   const { section, atEnd } = useScrollStory(sections, !helper);
   useReveal(!helper);
+
+  /*
+    Recording mode (?record, then Space): through the story at reading
+    pace, each colourway in turn, a drag to turn the product, then back up
+    through the story in the new colourway. Reload before each take so it
+    starts from the first colourway.
+  */
+  useDirector(async ({ wait, toBeat, drag }) => {
+    await wait(2500);
+    for (let i = 1; i < sections; i++) {
+      await toBeat(i);
+      await wait(2800);
+    }
+    for (const way of colorways.slice(1)) {
+      setActive(way);
+      await wait(2800);
+    }
+    const canvas = document.querySelector("canvas");
+    if (canvas) {
+      await drag(canvas, 420, 2400);
+      await wait(1800);
+    }
+    for (let i = sections - 2; i >= 0; i--) {
+      await toBeat(i, 1700);
+      await wait(1500);
+    }
+    await wait(1500);
+  });
 
   const quiet = section > 0 && section < sections - 1;
   const interactive = helper || atEnd;
