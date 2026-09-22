@@ -383,20 +383,52 @@ function Product({
   /**
    * The colourway on the model right now. It lags the prop by half a spin,
    * so the new colourway goes on while the product turns fastest and the
-   * switch itself is never seen.
+   * switch itself is never seen. The ref mirrors it for the spin effect,
+   * which must not re-run (and restart) every time it changes.
    */
   const [shown, setShown] = useState(colorway.id);
-  const previous = useRef(colorway.id);
+  const shownRef = useRef(colorway.id);
 
-  /* Spin on colourway change. */
+  /*
+    Spin on colourway change.
+
+    Guarded by what is actually on the model, not by the last colourway
+    asked for. React runs effects twice in development, and can re-run them
+    on a change too; guarded the other way, the first run's cleanup killed
+    the spin before its swap, and the second run found "nothing to do", so
+    the page changed colourway and the shoe never did. Now an interrupted
+    spin simply starts again from wherever the product is.
+  */
   useEffect(() => {
-    // Compared by value, so StrictMode's double mount never spins on load.
-    if (previous.current === colorway.id) return;
-    previous.current = colorway.id;
-
     const group = spin.current;
+    const target = colorway.id;
+
+    if (shownRef.current === target) {
+      // Nothing to swap (first load, or a spin that already swapped before
+      // being interrupted). Just make sure the product ends square on.
+      if (group && group.rotation.y % TAU !== 0) {
+        const home = gsap.to(group.rotation, {
+          y: Math.ceil(group.rotation.y / TAU) * TAU,
+          duration: 0.4,
+          ease: "power2.out",
+          onComplete: () => {
+            group.rotation.y = 0;
+          },
+        });
+        return () => {
+          home.kill();
+        };
+      }
+      return;
+    }
+
+    const swap = () => {
+      shownRef.current = target;
+      setShown(target);
+    };
+
     if (!group) {
-      setShown(colorway.id);
+      swap();
       return;
     }
 
@@ -413,7 +445,7 @@ function Product({
         group.rotation.y = from + (to - from) * progress.p;
         if (!swapped && progress.p >= 0.5) {
           swapped = true;
-          setShown(colorway.id);
+          swap();
         }
       },
       onComplete: () => {

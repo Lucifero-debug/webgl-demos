@@ -754,7 +754,9 @@ function Routes({ destinations }: { destinations: Destination[] }) {
       destinations.slice(0, -1).map((from, k) => {
         const to = destinations[k + 1];
         const curve = new THREE.CatmullRomCurve3(
-          arcPoints(toVector(from.lat, from.lon), toVector(to.lat, to.lon), 0.04, 0.08),
+          // Kept low: from the side, a tall arc reads as a lasso thrown off
+          // the planet rather than a flight path.
+          arcPoints(toVector(from.lat, from.lon), toVector(to.lat, to.lon), 0.02, 0.035),
         );
         return {
           geometry: new THREE.TubeGeometry(curve, 200, 0.003, 8, false),

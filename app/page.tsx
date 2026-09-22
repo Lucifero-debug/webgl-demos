@@ -19,9 +19,9 @@ const demos = [
   },
   {
     href: "/clinic",
-    title: "Clinic",
-    note: "A single glossy object, slow orbit, calm typography.",
-    ready: false,
+    title: "Clinic explainer",
+    note: "A dental implant that separates into its parts as you scroll.",
+    ready: true,
   },
 ].filter((demo) => demo.ready);
 

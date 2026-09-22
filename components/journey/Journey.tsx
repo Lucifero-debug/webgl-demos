@@ -9,13 +9,14 @@ import {
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
-  type RefObject,
 } from "react";
 import CanvasStage, { type CameraSetup } from "@/components/CanvasStage";
 import { distanceKm, formatCoordinates, latLonToArray } from "@/lib/journey/geo";
-import { anchorKey, beats, explore, overlay } from "@/lib/journey/overlay";
+import { anchorKey, beats, explore } from "@/lib/journey/overlay";
 import type { Destination, ItineraryStop, JourneyConfig } from "@/lib/journey/types";
 import { runtime } from "@/lib/showcase/runtime";
+import { localTime, useNow } from "@/lib/stage/clock";
+import { useFrameLoop, usePinned } from "@/lib/stage/pinned";
 import { dwell } from "@/lib/stage/timing";
 import { useScrollStory } from "@/lib/stage/useScrollStory";
 
@@ -60,42 +61,6 @@ const dayLabel = (days: string) => `Day${/[–-]/.test(days) ? "s" : ""} ${days}
 /* Live local time                                                     */
 /* ------------------------------------------------------------------ */
 
-/**
- * The current time, ticking over on each minute. Null until the page is
- * running in the browser: rendering a time on the server would never match
- * the visitor's clock, and React would report the difference.
- */
-function useNow() {
-  const [now, setNow] = useState<Date | null>(null);
-  useEffect(() => {
-    let timer = 0;
-    const tick = () => {
-      setNow(new Date());
-      timer = window.setTimeout(tick, 60_000 - (Date.now() % 60_000) + 50);
-    };
-    tick();
-    return () => window.clearTimeout(timer);
-  }, []);
-  return now;
-}
-
-const clocks = new Map<string, Intl.DateTimeFormat>();
-
-/** "06:14", in the given IANA time zone. */
-function localTime(now: Date, timeZone: string) {
-  let clock = clocks.get(timeZone);
-  if (!clock) {
-    clock = new Intl.DateTimeFormat("en-GB", {
-      timeZone,
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-    });
-    clocks.set(timeZone, clock);
-  }
-  return clock.format(now);
-}
-
 /** "06:14 in Kyoto", with a small pulsing dot to say it's live. */
 function LiveTime({
   now,
@@ -116,47 +81,6 @@ function LiveTime({
       </span>
     </span>
   );
-}
-
-/* ------------------------------------------------------------------ */
-/* Frame loop and pinning                                              */
-/* ------------------------------------------------------------------ */
-
-/** Runs a callback every animation frame, for as long as the component lives. */
-function useFrameLoop(callback: () => void) {
-  const latest = useRef(callback);
-  latest.current = callback;
-  useEffect(() => {
-    let id = 0;
-    const loop = () => {
-      latest.current();
-      id = requestAnimationFrame(loop);
-    };
-    id = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(id);
-  }, []);
-}
-
-/**
- * Keeps an element on a globe anchor: moved there every frame, and shown
- * only while `active` and while the point faces the camera. With
- * `clickable`, it also only takes clicks while shown.
- */
-function usePinned(
-  el: RefObject<HTMLElement | null>,
-  key: string,
-  active: boolean,
-  clickable = false,
-) {
-  useFrameLoop(() => {
-    const node = el.current;
-    const anchor = overlay.anchors.get(key);
-    if (!node || !anchor) return;
-    const shown = active && anchor.visible;
-    node.style.transform = `translate3d(${anchor.x}px, ${anchor.y}px, 0)`;
-    node.style.opacity = shown ? "1" : "0";
-    if (clickable) node.style.pointerEvents = shown ? "auto" : "none";
-  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -258,9 +182,11 @@ function PhotoStack({ destination, active }: { destination: Destination; active:
       aria-hidden={!active}
       className="pointer-events-none absolute left-0 top-0 hidden opacity-0 transition-opacity duration-500 landscape:block"
     >
-      {/* The line from the destination up to its photos. */}
-      <span className="absolute bottom-[10px] left-0 h-[62px] w-px bg-gradient-to-t from-[color:var(--gold)] to-transparent" />
-      <div className="absolute bottom-[80px] left-0 flex -translate-x-1/2 items-end gap-4">
+      {/* The line from the destination up to its photos. Sizes follow the
+          screen's height, so on short laptop screens the photos stay clear
+          of the header instead of climbing into it. */}
+      <span className="absolute bottom-[10px] left-0 h-[min(62px,7vh)] w-px bg-gradient-to-t from-[color:var(--gold)] to-transparent" />
+      <div className="absolute bottom-[min(80px,9vh)] left-0 flex -translate-x-1/2 items-end gap-4">
         {destination.photos.map((photo, i) => {
           // A loose fan: outer photos tilt outwards, the middle one sits higher.
           const middle = (count - 1) / 2;
@@ -269,7 +195,7 @@ function PhotoStack({ destination, active }: { destination: Destination; active:
           return (
             <figure
               key={photo.src}
-              className="w-[150px] transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              className="w-[min(150px,17vh)] transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
               style={{
                 transitionDelay: active ? `${150 + i * 110}ms` : "0ms",
                 opacity: active ? 1 : 0,

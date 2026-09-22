@@ -141,6 +141,20 @@ export default function CanvasStage({
   const [failed, setFailed] = useState(false);
   const [capture, setCapture] = useState(false);
   const three = useRef<Pick<RootState, "gl" | "scene" | "camera"> | null>(null);
+  const posterImage = useRef<HTMLImageElement>(null);
+
+  /*
+    A missing poster (not rendered yet) should be invisible, not its alt
+    text or a broken-image icon over the scene. The onError below misses a
+    poster that fails before React has hydrated the page, which a missing
+    file usually does, so check once mounted as well.
+  */
+  useEffect(() => {
+    const image = posterImage.current;
+    if (image && image.complete && image.naturalWidth === 0) {
+      image.style.visibility = "hidden";
+    }
+  }, []);
 
   // Poster capture: development only, and only with ?poster in the URL.
   useEffect(() => {
@@ -209,12 +223,11 @@ export default function CanvasStage({
     <div className={`relative h-full w-full ${className}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
+        ref={posterImage}
         src={poster}
         alt={posterAlt}
         fetchPriority="high"
         decoding="async"
-        // A missing poster (not rendered yet) should be invisible, not a
-        // broken-image icon sitting over the scene.
         onError={(event) => {
           event.currentTarget.style.visibility = "hidden";
         }}

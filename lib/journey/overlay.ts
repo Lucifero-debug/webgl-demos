@@ -1,25 +1,18 @@
+import { anchors } from "@/lib/stage/anchors";
+
+export type { Anchor } from "@/lib/stage/anchors";
+
 /*
   The bridge between the globe and the page's HTML layers. No three
   imports, so both sides can use it.
 
-  Photos and day labels are HTML, which keeps them crisp and easy to style,
-  but they must follow points on a moving globe. The scene projects those
-  points to the screen every frame and writes them here; the page reads
-  them in its own animation frame and moves its elements to match. Plain
-  mutable objects, not React state: 60 updates a second through React
-  would re-render the page for nothing.
+  The anchor map itself is shared by every scene (lib/stage/anchors.ts);
+  this file adds the travel demo's keys, its story beats, and the explorable
+  finale's state.
 */
 
-export type Anchor = {
-  /** Viewport pixels. */
-  x: number;
-  y: number;
-  /** On the side of the planet facing the camera, and on screen. */
-  visible: boolean;
-};
-
 export const overlay = {
-  anchors: new Map<string, Anchor>(),
+  anchors,
 };
 
 export const anchorKey = {
