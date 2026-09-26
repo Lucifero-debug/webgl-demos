@@ -35,6 +35,19 @@ export type ClinicConfig = {
     steps: { when: string; title: string; detail: string }[];
     cta: string;
   };
+  /**
+   * Optional last beat: what it costs, shown only after the treatment has
+   * been explained. A price read after watching what goes into the work
+   * lands very differently from one read before.
+   */
+  pricing?: {
+    eyebrow: string;
+    title: string;
+    rows: { label: string; detail?: string; price: string }[];
+    cta: string;
+    /** Small print: what the price covers, and what it depends on. */
+    note: string;
+  };
   clinic: {
     address: string;
     phone: string;

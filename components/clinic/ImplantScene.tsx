@@ -307,7 +307,7 @@ function buildShots(config: ClinicConfig, aspect: number) {
     crown: [2.8, 30, 26],
   };
 
-  return [
+  const shots = [
     orbit(stackMiddle(0), 6.2, 25, 8, "left"),
     orbit(stackMiddle(1), 8.4, 35, 6, "right"),
     ...config.parts.map((beat) => {
@@ -316,21 +316,34 @@ function buildShots(config: ClinicConfig, aspect: number) {
     }),
     orbit(stackMiddle(0), 6.4, 20, 8, "left"),
   ];
-}
+  // Apart from the explode beat to the last close-up; together at both ends.
+  const apart = shots.map((_, i) => (i === 0 || i === shots.length - 1 ? 0 : 1));
 
-/** Separated from the explode beat to the last close-up; together at the ends. */
-function explodeAt(beats: number) {
-  return Array.from({ length: beats }, (_, i) => (i === 0 || i === beats - 1 ? 0 : 1));
+  if (config.pricing) {
+    // Closer and from the other side, so the price beat is its own moment
+    // rather than a caption under the timeline.
+    shots.push(orbit(stackMiddle(0), 5.4, 38, 10, "right"));
+    apart.push(0);
+  }
+
+  return { shots, apart };
 }
 
 /** Shared per frame: how far apart the parts are, written by the rig. */
 type Motion = { explode: number };
 
-function CameraRig({ shots, motion }: { shots: Shot[]; motion: Motion }) {
+function CameraRig({
+  shots,
+  apart,
+  motion,
+}: {
+  shots: Shot[];
+  apart: number[];
+  motion: Motion;
+}) {
   const camera = useThree((state) => state.camera) as THREE.PerspectiveCamera;
   const look = useRef<THREE.Vector3 | null>(null);
   const lens = useRef({ fov: shots[0].fov, offset: shots[0].offset.clone() });
-  const apart = useMemo(() => explodeAt(shots.length), [shots.length]);
   const w = useMemo(
     () => ({ pos: new THREE.Vector3(), target: new THREE.Vector3(), offset: new THREE.Vector2() }),
     [],
@@ -524,14 +537,14 @@ function Studio() {
 
 export default function ImplantScene({ config }: { config: ClinicConfig }) {
   const aspect = useThree((state) => state.size.width / state.size.height);
-  const shots = useMemo(() => buildShots(config, aspect), [config, aspect]);
+  const { shots, apart } = useMemo(() => buildShots(config, aspect), [config, aspect]);
   const motion = useMemo<Motion>(() => ({ explode: 0 }), []);
 
   return (
     <>
       {/* Order matters: the rig sets the camera and explode first, then the
           implant and the labels read them in the same frame. */}
-      <CameraRig shots={shots} motion={motion} />
+      <CameraRig shots={shots} apart={apart} motion={motion} />
       <Implant motion={motion} />
       <Anchors motion={motion} />
       <Studio />

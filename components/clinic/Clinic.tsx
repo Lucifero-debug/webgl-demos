@@ -208,8 +208,10 @@ function Dimension({ active, label }: { active: boolean; label: string }) {
 /* ------------------------------------------------------------------ */
 
 export default function Clinic({ config }: { config: ClinicConfig }) {
-  const { brand, hero, explode, callouts, parts, finale, clinic } = config;
-  const sections = parts.length + 3;
+  const { brand, hero, explode, callouts, parts, finale, pricing, clinic } = config;
+  const finaleIndex = 2 + parts.length;
+  const pricingIndex = pricing ? finaleIndex + 1 : -1;
+  const sections = (pricing ? pricingIndex : finaleIndex) + 1;
   const { section, settled } = useScrollStory(sections);
   const shows = (index: number) => section === index && settled;
   const now = useNow();
@@ -230,7 +232,8 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
   const partIndex = (part: PartKey) => parts.findIndex((p) => p.part === part);
   const implantShown = shows(2 + partIndex("implant"));
   const heroShown = shows(0);
-  const finaleShown = shows(sections - 1);
+  const finaleShown = shows(finaleIndex);
+  const pricingShown = pricing ? shows(pricingIndex) : false;
 
   const button =
     "inline-flex h-12 items-center bg-[color:var(--ink)] px-6 text-[14px] font-medium text-white outline-offset-4 transition-colors hover:bg-[#2A3238] focus-visible:outline-2 focus-visible:outline-[color:var(--ink)]";
@@ -362,6 +365,42 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
           </div>
           <p className="mt-6 text-[11px] text-[color:var(--muted)]">{config.note}</p>
         </Panel>
+
+        {/* Cost, last: a price read after watching the work lands differently. */}
+        {pricing && (
+          <Panel active={pricingShown} align="right">
+            <p className="text-[13px] text-[color:var(--accent)]">{pricing.eyebrow}</p>
+            <h2 className={`${serif} mt-4 text-[clamp(2.4rem,4vw,4.25rem)] font-light leading-[1]`}>
+              {pricing.title}
+            </h2>
+            <ul className="mt-7 border-t border-[color:var(--hairline)]">
+              {pricing.rows.map((row) => (
+                <li
+                  key={row.label}
+                  className="flex items-baseline justify-between gap-6 border-b border-[color:var(--hairline)] py-3"
+                >
+                  <span className="text-left">
+                    <span className="block text-[15px]">{row.label}</span>
+                    {row.detail && (
+                      <span className="block text-[13px] text-[color:var(--muted)]">
+                        {row.detail}
+                      </span>
+                    )}
+                  </span>
+                  <span className="shrink-0 text-[15px] tabular-nums">{row.price}</span>
+                </li>
+              ))}
+            </ul>
+            <a
+              href="#"
+              tabIndex={pricingShown ? 0 : -1}
+              className={`mt-8 ${button} ${pricingShown ? "pointer-events-auto" : ""}`}
+            >
+              {pricing.cta}
+            </a>
+            <p className="mt-6 text-[11px] leading-snug text-[color:var(--muted)]">{pricing.note}</p>
+          </Panel>
+        )}
 
         <p
           className={`absolute bottom-10 right-6 flex items-center gap-3 text-[12px] text-[color:var(--muted)] transition-opacity duration-500 md:right-10 ${
