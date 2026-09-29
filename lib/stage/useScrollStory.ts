@@ -19,8 +19,12 @@ import { runtime } from "@/lib/showcase/runtime";
  * section's shot rather than travelling), and whether the page is at the
  * very bottom. All are React state, but they only change when their value
  * does, not on every scroll event.
+ *
+ * `scoped` measures progress against the story's own height, one screen
+ * per section, instead of the whole document. That lets a page carry
+ * ordinary sections below the story without stretching the story out.
  */
-export function useScrollStory(sections: number, enabled = true) {
+export function useScrollStory(sections: number, enabled = true, scoped = false) {
   const [section, setSection] = useState(0);
   const [settled, setSettled] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
@@ -31,8 +35,10 @@ export function useScrollStory(sections: number, enabled = true) {
     const lenis = reduce ? null : new Lenis({ autoRaf: true, lerp: 0.085 });
 
     const update = () => {
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = max > 0 ? window.scrollY / max : 0;
+      const storyHeight = scoped
+        ? (sections - 1) * window.innerHeight
+        : document.documentElement.scrollHeight - window.innerHeight;
+      const progress = storyHeight > 0 ? Math.min(1, window.scrollY / storyHeight) : 0;
       runtime.progress = progress;
       const x = progress * (sections - 1);
       const nearest = Math.round(x);
@@ -53,7 +59,7 @@ export function useScrollStory(sections: number, enabled = true) {
       window.removeEventListener("resize", update);
       runtime.progress = 0;
     };
-  }, [enabled, sections]);
+  }, [enabled, sections, scoped]);
 
   return { section, settled, atEnd };
 }

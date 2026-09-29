@@ -17,8 +17,12 @@ export type PartBeat = {
   align: "left" | "right";
 };
 
-/** Opening and closing times, "08:00" style, or null for closed. */
-export type DayHours = [open: string, close: string] | null;
+/**
+ * A day's opening hours, as one or more ranges: [["09:30", "13:30"],
+ * ["16:30", "20:30"]] for a clinic that closes at lunch. null means closed.
+ * Single-range days are still written as one range in a list.
+ */
+export type DayHours = [open: string, close: string][] | null;
 
 export type ClinicConfig = {
   brand: string;
@@ -48,6 +52,12 @@ export type ClinicConfig = {
     /** Small print: what the price covers, and what it depends on. */
     note: string;
   };
+  /**
+   * Where every call-to-action button goes: the clinic's booking page, a
+   * tel: link, or a WhatsApp link. A button that goes nowhere is worse than
+   * no button, so this is required.
+   */
+  ctaHref: string;
   clinic: {
     address: string;
     phone: string;

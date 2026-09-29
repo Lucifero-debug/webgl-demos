@@ -17,14 +17,15 @@ import type { ClinicConfig } from "./types";
   - what he explains to every patient in person that the page should cover
 */
 export const sachdeva: ClinicConfig = {
-  // CONFIRM: the clinic's name exactly as he writes it.
-  brand: "Dental Implant India",
+  // CONFIRM: he uses several names across his sites. This is the one from
+  // his Google listing; "Dr. Sachdeva's Dental Clinic" also appears.
+  brand: "Dr. Sachdeva's Dental Institute",
   poster: "/posters/sachdeva.webp",
   hero: {
     eyebrow: "Dental implants",
     title: "A tooth that's fixed in place.",
     tagline:
-      "An implant replaces the root as well as the tooth, so it bites and chews like the one you lost. Here is what goes into one.",
+      "An implant replaces the root as well as the tooth, so it bites and chews like the one you lost. Dr. Sachdeva has placed more than 10,000 of them. Here is what goes into one.",
     cta: "Book a consultation",
   },
   explode: {
@@ -89,20 +90,41 @@ export const sachdeva: ClinicConfig = {
     // CONFIRM: he may want different wording, or more of it.
     note: "Every case differs. The final cost depends on the bone available and the treatment planned at your consultation.",
   },
+  // WhatsApp, since that is how most patients here actually get in touch,
+  // and it works from a phone and a laptop. CONFIRM he wants this rather
+  // than the contact form at /contact/ or a tel: link.
+  ctaHref: "https://wa.me/919818894041",
   clinic: {
-    // CONFIRM: full address as he wants it shown.
-    address: "Ashok Vihar, New Delhi",
-    phone: "",
+    address: "I-101, 1st Floor, Ashok Vihar Phase-1, New Delhi 110052",
+    phone: "+91 98188 94041",
     timeZone: "Asia/Kolkata",
-    // CONFIRM: opening hours. Sunday first, as JavaScript counts days.
+    // From his website: Monday to Saturday with a break, Sunday mornings.
     hours: [
-      null,
-      ["10:00", "20:00"],
-      ["10:00", "20:00"],
-      ["10:00", "20:00"],
-      ["10:00", "20:00"],
-      ["10:00", "20:00"],
-      ["10:00", "20:00"],
+      [["10:00", "13:30"]],
+      [
+        ["09:30", "13:30"],
+        ["16:30", "20:30"],
+      ],
+      [
+        ["09:30", "13:30"],
+        ["16:30", "20:30"],
+      ],
+      [
+        ["09:30", "13:30"],
+        ["16:30", "20:30"],
+      ],
+      [
+        ["09:30", "13:30"],
+        ["16:30", "20:30"],
+      ],
+      [
+        ["09:30", "13:30"],
+        ["16:30", "20:30"],
+      ],
+      [
+        ["09:30", "13:30"],
+        ["16:30", "20:30"],
+      ],
     ],
   },
   note: "",

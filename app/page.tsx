@@ -23,6 +23,12 @@ const demos = [
     note: "A dental implant that separates into its parts as you scroll.",
     ready: true,
   },
+  {
+    href: "/property",
+    title: "Property tower",
+    note: "An apartment building that comes apart floor by floor.",
+    ready: false,
+  },
 ].filter((demo) => demo.ready);
 
 export default function Home() {

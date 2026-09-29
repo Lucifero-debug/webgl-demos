@@ -42,22 +42,26 @@ const serif = "font-[family-name:var(--font-serif)]";
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-/** "Open now, until 19:00" or "Closed, opens tomorrow at 08:00", in the clinic's own time zone. */
+/**
+ * "Open now, until 13:30" or "Closed, opens at 16:30", in the clinic's own
+ * time zone. Handles days with a break, which most Indian clinics have.
+ */
 function openStatus(now: Date, clinic: ClinicConfig["clinic"]) {
   const { day, time } = zonedTime(now, clinic.timeZone);
-  const today = clinic.hours[day];
-  if (today && time >= today[0] && time < today[1]) {
-    return { open: true, text: `Open now, until ${today[1]}` };
-  }
-  if (today && time < today[0]) {
-    return { open: false, text: `Closed, opens today at ${today[0]}` };
-  }
+  const today = clinic.hours[day] ?? [];
+
+  const open = today.find(([from, to]) => time >= from && time < to);
+  if (open) return { open: true, text: `Open now, until ${open[1]}` };
+
+  const later = today.find(([from]) => time < from);
+  if (later) return { open: false, text: `Closed, opens at ${later[0]}` };
+
   for (let ahead = 1; ahead <= 7; ahead++) {
     const next = (day + ahead) % 7;
     const hours = clinic.hours[next];
-    if (hours) {
+    if (hours && hours.length) {
       const when = ahead === 1 ? "tomorrow" : DAY_NAMES[next];
-      return { open: false, text: `Closed, opens ${when} at ${hours[0]}` };
+      return { open: false, text: `Closed, opens ${when} at ${hours[0][0]}` };
     }
   }
   return { open: false, text: "Closed" };
@@ -283,7 +287,7 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
             {hero.tagline}
           </p>
           <a
-            href="#"
+            href={config.ctaHref}
             tabIndex={heroShown ? 0 : -1}
             className={`mt-8 ${button} ${heroShown ? "pointer-events-auto" : ""}`}
           >
@@ -351,7 +355,7 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
           </ol>
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
             <a
-              href="#"
+              href={config.ctaHref}
               tabIndex={finaleShown ? 0 : -1}
               className={`${button} ${finaleShown ? "pointer-events-auto" : ""}`}
             >
@@ -392,7 +396,7 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
               ))}
             </ul>
             <a
-              href="#"
+              href={config.ctaHref}
               tabIndex={pricingShown ? 0 : -1}
               className={`mt-8 ${button} ${pricingShown ? "pointer-events-auto" : ""}`}
             >
