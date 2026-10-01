@@ -50,6 +50,18 @@ export default function StageCanvas({
         onCreated?.(state);
       }}
       className="absolute inset-0"
+      /*
+        R3F sets touch-action: none on the canvas so 3D drags work. On a
+        phone that stops the page scrolling entirely wherever the canvas
+        covers the screen, which on these pages is everywhere: dragging
+        over it does nothing, and the story cannot be reached. (Desktop
+        hides the problem, because wheel scrolling ignores touch-action.)
+
+        pan-y gives the page back its vertical scrolling while leaving
+        horizontal drags to the scene, which is what the product's
+        drag-to-rotate and the globe's spin need.
+      */
+      style={{ touchAction: "pan-y" }}
     >
       {children}
     </Canvas>
