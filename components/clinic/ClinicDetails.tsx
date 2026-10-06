@@ -271,18 +271,6 @@ export default function ClinicDetails({ config }: { config: ClinicConfig }) {
           )}
         </div>
       </footer>
-
-      {/*
-        Always within thumb's reach on a phone, which is where nearly every
-        patient will open this. The page's job is enquiries, and this is
-        the control that produces them.
-      */}
-      <a
-        href={ctaHref}
-        className="fixed bottom-5 left-1/2 z-40 flex h-13 -translate-x-1/2 items-center gap-2 rounded-full bg-[color:var(--accent)] px-6 py-3.5 text-[15px] font-semibold text-[#14161A] shadow-[0_12px_30px_rgba(0,0,0,0.5)] lg:hidden"
-      >
-        WhatsApp the clinic
-      </a>
     </div>
   );
 }
