@@ -266,8 +266,17 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
     "inline-flex h-12 items-center bg-[color:var(--accent)] px-6 text-[14px] font-semibold text-[#14161A] outline-offset-4 transition-colors hover:bg-[#E8C68A] focus-visible:outline-2 focus-visible:outline-[color:var(--accent)]";
 
   return (
-    <main className="relative text-[color:var(--ink)]" style={theme}>
-      {/* Fixed stage: a pale studio ground with a soft light behind the object. */}
+    /*
+      The ground colour lives on the page, not on the fixed stage below:
+      that stage fades out at the end of the story, and when the colour
+      travelled with it the scroll spacers showed the browser's default
+      white.
+    */
+    <main
+      className="relative min-h-svh bg-[color:var(--ground)] text-[color:var(--ink)]"
+      style={theme}
+    >
+      {/* Fixed stage: the object, and a warm pool of light behind it. */}
       <div className={`fixed inset-0 ${storyLayer}`}>
         <div className="pointer-events-none absolute inset-0 bg-[color:var(--ground)]" />
         {/* A warm pool of light behind the object, in his gold. */}

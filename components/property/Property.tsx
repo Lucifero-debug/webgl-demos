@@ -177,7 +177,15 @@ export default function Property({ config }: { config: PropertyConfig }) {
   });
 
   return (
-    <main className="relative text-[color:var(--ink)]" style={theme}>
+    /*
+      The ground colour lives on the page, not on the fixed stage: that
+      stage fades out at the end of the story, and the scroll spacers
+      would otherwise show the browser's default white.
+    */
+    <main
+      className="relative min-h-svh bg-[color:var(--ground)] text-[color:var(--ink)]"
+      style={theme}
+    >
       {/* Fixed stage: a pale site with the model standing on it. */}
       <div className={`fixed inset-0 ${storyLayer}`}>
         <div className="pointer-events-none absolute inset-0 bg-[color:var(--ground)]" />
