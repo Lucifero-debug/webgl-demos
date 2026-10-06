@@ -146,7 +146,14 @@ export default function Property({ config }: { config: PropertyConfig }) {
     should finish its story before those arrive rather than being stretched
     across the whole document.
   */
-  const { section, settled } = useScrollStory(sections, true, true);
+  const { section, settled, atEnd } = useScrollStory(sections, true, true);
+
+  /*
+    The story's layers are fixed, so they would otherwise sit on top of
+    the sections that scroll up beneath them. Once the last beat is
+    reached they fade out and stop taking clicks.
+  */
+  const storyLayer = `transition-opacity duration-500 ${atEnd ? "pointer-events-none opacity-0" : "opacity-100"}`;
   const shows = (index: number) => section === index && settled;
   const heroShown = shows(0);
   const pricingShown = shows(pricingIndex);
@@ -172,7 +179,7 @@ export default function Property({ config }: { config: PropertyConfig }) {
   return (
     <main className="relative text-[color:var(--ink)]" style={theme}>
       {/* Fixed stage: a pale site with the model standing on it. */}
-      <div className="fixed inset-0">
+      <div className={`fixed inset-0 ${storyLayer}`}>
         <div className="pointer-events-none absolute inset-0 bg-[color:var(--ground)]" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_60%_35%,#FAF8F4_0%,rgba(250,248,244,0)_100%)]" />
         <div className="pointer-events-none absolute inset-0 z-10">
@@ -189,7 +196,7 @@ export default function Property({ config }: { config: PropertyConfig }) {
       </div>
 
       {/* Pinned to the building. */}
-      <div className="pointer-events-none fixed inset-0 z-[15]">
+      <div className={`pointer-events-none fixed inset-0 z-[15] ${storyLayer}`}>
         {tower.bands.map((band, i) => (
           <BandLabel
             key={band.id}
@@ -213,7 +220,7 @@ export default function Property({ config }: { config: PropertyConfig }) {
       </div>
 
       {/* Fixed text. */}
-      <div className="pointer-events-none fixed inset-0 z-20">
+      <div className={`pointer-events-none fixed inset-0 z-20 ${storyLayer}`}>
         <Panel active={heroShown} align="left" wide>
           <p className="text-[13px] text-[color:var(--accent)]">{hero.eyebrow}</p>
           <h1 className={`${serif} mt-4 text-[clamp(2.6rem,5vw,5.25rem)] leading-[1.02]`}>
@@ -327,7 +334,9 @@ export default function Property({ config }: { config: PropertyConfig }) {
         </p>
       </div>
 
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-30 flex items-baseline justify-between px-6 pt-6 md:px-10 md:pt-8">
+      <header
+        className={`pointer-events-none fixed inset-x-0 top-0 z-30 flex items-baseline justify-between px-6 pt-6 md:px-10 md:pt-8 ${storyLayer}`}
+      >
         <span className={`${serif} text-[22px] leading-none`}>{project}</span>
         <span className="text-[12px] text-[color:var(--muted)]">By {brand}</span>
       </header>

@@ -26,13 +26,21 @@ const ImplantScene = lazy(() => import("@/components/clinic/ImplantScene"));
   Headlines use the serif set up in the route's page file (--font-serif).
 */
 
+/*
+  Dark and gold, taken from the clinic's own logo.
+
+  The pale version read as a medical leaflet. On near-black, polished
+  titanium and the gold abutment are the brightest things on screen, which
+  is the whole point of putting a 3D implant on a page: the object should
+  look expensive, because the treatment is.
+*/
 const theme = {
-  "--ink": "#14191C",
-  "--muted": "#58636C",
-  // The abutment's gold, darkened until it reads as text on the pale ground.
-  "--accent": "#8C6A2F",
-  "--hairline": "rgba(20, 25, 28, 0.14)",
-  "--ground": "#E9EDEF",
+  "--ink": "#F3EFE7",
+  "--muted": "#9AA2AA",
+  // The gold from his logo.
+  "--accent": "#D9B36C",
+  "--hairline": "rgba(243, 239, 231, 0.16)",
+  "--ground": "#0E0F11",
 } as CSSProperties;
 
 const serif = "font-[family-name:var(--font-serif)]";
@@ -89,11 +97,11 @@ function OpenStatus({ now, clinic }: { now: Date | null; clinic: ClinicConfig["c
 /** A soft wash of the page colour behind the text, so it reads over the object. */
 const SCRIM = {
   left:
-    "landscape:bg-[linear-gradient(90deg,rgba(233,237,239,0.92)_0%,rgba(233,237,239,0.6)_30%,rgba(233,237,239,0)_55%)] " +
-    "portrait:bg-[linear-gradient(0deg,rgba(233,237,239,0.95)_0%,rgba(233,237,239,0.7)_40%,rgba(233,237,239,0)_65%)]",
+    "landscape:bg-[linear-gradient(90deg,rgba(14,15,17,0.95)_0%,rgba(14,15,17,0.72)_32%,rgba(14,15,17,0)_58%)] " +
+    "portrait:bg-[linear-gradient(0deg,rgba(14,15,17,0.96)_0%,rgba(14,15,17,0.78)_42%,rgba(14,15,17,0)_68%)]",
   right:
-    "landscape:bg-[linear-gradient(270deg,rgba(233,237,239,0.92)_0%,rgba(233,237,239,0.6)_30%,rgba(233,237,239,0)_55%)] " +
-    "portrait:bg-[linear-gradient(0deg,rgba(233,237,239,0.95)_0%,rgba(233,237,239,0.7)_40%,rgba(233,237,239,0)_65%)]",
+    "landscape:bg-[linear-gradient(270deg,rgba(14,15,17,0.95)_0%,rgba(14,15,17,0.72)_32%,rgba(14,15,17,0)_58%)] " +
+    "portrait:bg-[linear-gradient(0deg,rgba(14,15,17,0.96)_0%,rgba(14,15,17,0.78)_42%,rgba(14,15,17,0)_68%)]",
 };
 
 /**
@@ -169,7 +177,7 @@ function Callout({
           <span className="block text-[14px]">{name}</span>
           <span className="block text-[12px] text-[color:var(--muted)]">{detail}</span>
         </span>
-        <span className="h-px w-12 bg-[color:var(--ink)] opacity-35" />
+        <span className="h-px w-12 bg-[color:var(--accent)] opacity-60" />
       </div>
     </div>
   );
@@ -223,9 +231,17 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
     before those arrive rather than being stretched across the whole
     document.
   */
-  const { section, settled } = useScrollStory(sections, true, true);
+  const { section, settled, atEnd } = useScrollStory(sections, true, true);
   const shows = (index: number) => section === index && settled;
   const now = useNow();
+
+  /*
+    The story's layers are fixed, so they would otherwise sit on top of
+    the landing sections that scroll up beneath them. Once the last beat
+    is reached they fade out and stop taking clicks, handing the screen
+    over to the page.
+  */
+  const storyLayer = `transition-opacity duration-500 ${atEnd ? "pointer-events-none opacity-0" : "opacity-100"}`;
 
   /* Recording mode (?record, then Space): each beat in turn, at reading pace. */
   useDirector(async ({ wait, toBeat }) => {
@@ -247,14 +263,15 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
   const pricingShown = pricing ? shows(pricingIndex) : false;
 
   const button =
-    "inline-flex h-12 items-center bg-[color:var(--ink)] px-6 text-[14px] font-medium text-white outline-offset-4 transition-colors hover:bg-[#2A3238] focus-visible:outline-2 focus-visible:outline-[color:var(--ink)]";
+    "inline-flex h-12 items-center bg-[color:var(--accent)] px-6 text-[14px] font-semibold text-[#14161A] outline-offset-4 transition-colors hover:bg-[#E8C68A] focus-visible:outline-2 focus-visible:outline-[color:var(--accent)]";
 
   return (
     <main className="relative text-[color:var(--ink)]" style={theme}>
       {/* Fixed stage: a pale studio ground with a soft light behind the object. */}
-      <div className="fixed inset-0">
+      <div className={`fixed inset-0 ${storyLayer}`}>
         <div className="pointer-events-none absolute inset-0 bg-[color:var(--ground)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_65%_at_62%_45%,#F8FAFB_0%,rgba(248,250,251,0)_100%)]" />
+        {/* A warm pool of light behind the object, in his gold. */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_62%_at_60%_45%,rgba(217,179,108,0.16)_0%,rgba(217,179,108,0)_70%)]" />
         <div className="pointer-events-none absolute inset-0 z-10">
           <CanvasStage
             camera={camera}
@@ -269,7 +286,7 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
       </div>
 
       {/* Pinned to the scene: part labels and the implant's dimension line. */}
-      <div className="pointer-events-none fixed inset-0 z-[15]">
+      <div className={`pointer-events-none fixed inset-0 z-[15] ${storyLayer}`}>
         {(["crown", "abutment", "implant"] as PartKey[]).map((part, i) => (
           <Callout
             key={part}
@@ -284,7 +301,7 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
       </div>
 
       {/* Fixed text: one panel at a time, swapped as the camera settles. */}
-      <div className="pointer-events-none fixed inset-0 z-20">
+      <div className={`pointer-events-none fixed inset-0 z-20 ${storyLayer}`}>
         <Panel active={heroShown} align="left" wide>
           <p className="text-[13px] text-[color:var(--accent)]">{hero.eyebrow}</p>
           <h1 className={`${serif} mt-4 text-[clamp(2.75rem,5.4vw,5.75rem)] font-light leading-[0.98]`}>
@@ -424,7 +441,9 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
       </div>
 
       {/* Above the text: the clinic's own mark, and whether it is open. */}
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-30 flex items-center justify-between px-6 pt-5 md:px-10 md:pt-6">
+      <header
+        className={`pointer-events-none fixed inset-x-0 top-0 z-30 flex items-center justify-between px-6 pt-5 md:px-10 md:pt-6 ${storyLayer}`}
+      >
         {config.logo ? (
           /*
             The logo is gold on near-black, so it sits on its own dark
