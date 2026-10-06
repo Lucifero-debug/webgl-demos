@@ -19,7 +19,78 @@ import type { ClinicConfig } from "./types";
 export const sachdeva: ClinicConfig = {
   // CONFIRM: he uses several names across his sites. This is the one from
   // his Google listing; "Dr. Sachdeva's Dental Clinic" also appears.
-  brand: "Dr. Sachdeva's Dental Institute",
+  brand: "Dr. Rajat Sachdeva's Dentistry",
+  logo: "/doctor/logo.webp",
+  website: "https://www.dentalimplantindia.co.in",
+  doctor: {
+    name: "Dr. Rajat Sachdeva",
+    // CONFIRM: his actual degrees and fellowships, exactly as he writes
+    // them. These are a placeholder and must not go live unchecked.
+    credentials: "BDS, MDS · Implantologist",
+    role: "Ashok Vihar, New Delhi",
+    photo: "/doctor/portrait.webp",
+    bio: [
+      "I have placed more than 10,000 implants. Most of my patients come to me after being told somewhere else that an implant is not possible for them, or after a denture they could never get used to.",
+      "Every case starts with a scan and an honest answer about what the bone will take. If an implant is the wrong treatment for you, I will say so.",
+      // CONFIRM: whether he teaches, and what he would like said about it.
+      "I also train other dentists in implantology, which keeps me honest about technique.",
+    ],
+    proof: [
+      { figure: "10,000+", label: "implants placed" },
+      // CONFIRM both of these figures with him.
+      { figure: "15 years", label: "in implant dentistry" },
+      { figure: "Nobel Biocare", label: "implant systems used" },
+    ],
+  },
+  treatments: {
+    label: "What we do",
+    title: "Implants, and what goes with them.",
+    photo: "/doctor/pointing.webp",
+    // CONFIRM: the list and the wording. Taken from his website.
+    items: [
+      { name: "Single implant", detail: "One missing tooth replaced, root and all, in about an hour in the chair." },
+      { name: "All-on-4", detail: "A full arch of teeth on four implants, for patients who have lost most of their teeth." },
+      { name: "Full-mouth rehabilitation", detail: "Both jaws planned together, so the bite works as one." },
+      { name: "Bone grafting", detail: "Rebuilding the bone first, when there is not enough to hold an implant." },
+      { name: "Immediate loading", detail: "A temporary tooth the same day, where the bone allows it." },
+      { name: "Implant-supported dentures", detail: "A denture that clips to implants instead of moving while you eat." },
+    ],
+  },
+  faq: {
+    label: "Before you call",
+    title: "The questions everyone asks.",
+    // CONFIRM every answer: these are his clinical claims, not mine.
+    items: [
+      {
+        q: "Does it hurt?",
+        a: "The implant is placed under local anaesthetic, so you feel pressure rather than pain. Most patients are surprised how little there is afterwards, and take ordinary painkillers for a day or two.",
+      },
+      {
+        q: "How long does the whole thing take?",
+        a: "The implant takes about an hour to place. Then the bone needs eight to twelve weeks to bond with it before the tooth goes on. In some cases a temporary tooth can be fitted the same day.",
+      },
+      {
+        q: "How long will it last?",
+        a: "An implant that is looked after can last decades. What decides it is the health of the gum and bone around it, which is why we check it at every visit.",
+      },
+      {
+        q: "What if I was told I don't have enough bone?",
+        a: "That is one of the most common reasons patients come to us. Bone can often be rebuilt with a graft, and there are techniques that use the bone you still have. Bring your scan and we will tell you honestly.",
+      },
+      {
+        q: "Why is there such a difference in price between clinics?",
+        a: "Mostly the implant system and who places it. We use Nobel Biocare, a premium system with decades of research behind it, and the price on this page includes the implant, the abutment and the crown.",
+      },
+    ],
+  },
+  visit: {
+    label: "Visit",
+    title: "Come in and get it looked at.",
+    body: "Bring any scans or X-rays you already have. A consultation is ₹500 and includes an examination and an X-ray, and you will leave knowing what is possible.",
+    photo: "/doctor/welcome.webp",
+    // CONFIRM: his Google Maps link.
+    mapUrl: "https://maps.google.com/?q=Dr+Sachdeva+Dental+Institute+Ashok+Vihar+Delhi",
+  },
   poster: "/posters/sachdeva.webp",
   hero: {
     eyebrow: "Dental implants",

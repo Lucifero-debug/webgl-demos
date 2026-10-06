@@ -26,6 +26,44 @@ export type DayHours = [open: string, close: string][] | null;
 
 export type ClinicConfig = {
   brand: string;
+  /** The clinic's own logo, shown in the header. */
+  logo?: string;
+  /**
+   * The clinic's main website. This page is one page about one
+   * treatment, so it should always offer a way back to everything else
+   * the clinic does.
+   */
+  website?: string;
+  /**
+   * The dentist. In this market patients choose a person, not a clinic,
+   * so the page is built around him rather than around the practice.
+   */
+  doctor?: {
+    name: string;
+    credentials: string;
+    role: string;
+    photo: string;
+    /** Two or three short paragraphs, in his voice. */
+    bio: string[];
+    proof: { figure: string; label: string }[];
+  };
+  /** What the clinic does, beyond the treatment this page explains. */
+  treatments?: {
+    label: string;
+    title: string;
+    items: { name: string; detail: string }[];
+    photo?: string;
+  };
+  /** The questions every implant patient asks before they ring. */
+  faq?: { label: string; title: string; items: { q: string; a: string }[] };
+  /** Closing section: come and see us. */
+  visit?: {
+    label: string;
+    title: string;
+    body: string;
+    photo?: string;
+    mapUrl?: string;
+  };
   /** Shown until the 3D scene loads. Save one with the ?poster URL flag. */
   poster: string;
   hero: { eyebrow: string; title: string; tagline: string; cta: string };

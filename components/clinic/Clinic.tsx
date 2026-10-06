@@ -2,6 +2,7 @@
 
 import { lazy, useMemo, useRef, type CSSProperties, type ReactNode } from "react";
 import CanvasStage, { type CameraSetup } from "@/components/CanvasStage";
+import ClinicDetails from "@/components/clinic/ClinicDetails";
 import type { ClinicConfig, PartKey } from "@/lib/clinic/types";
 import { anchors } from "@/lib/stage/anchors";
 import { useNow, zonedTime } from "@/lib/stage/clock";
@@ -216,7 +217,13 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
   const finaleIndex = 2 + parts.length;
   const pricingIndex = pricing ? finaleIndex + 1 : -1;
   const sections = (pricing ? pricingIndex : finaleIndex) + 1;
-  const { section, settled } = useScrollStory(sections);
+  /*
+    Scoped to the story's own height: the page carries the clinic's
+    landing sections below it, and the camera should finish its story
+    before those arrive rather than being stretched across the whole
+    document.
+  */
+  const { section, settled } = useScrollStory(sections, true, true);
   const shows = (index: number) => section === index && settled;
   const now = useNow();
 
@@ -416,9 +423,23 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
         </p>
       </div>
 
-      {/* Above the text: the brand, and whether the clinic is open right now. */}
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-30 flex items-baseline justify-between px-6 pt-6 md:px-10 md:pt-8">
-        <span className={`${serif} text-[22px] leading-none`}>{brand}</span>
+      {/* Above the text: the clinic's own mark, and whether it is open. */}
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-30 flex items-center justify-between px-6 pt-5 md:px-10 md:pt-6">
+        {config.logo ? (
+          /*
+            The logo is gold on near-black, so it sits on its own dark
+            chip rather than on the page's pale background, where gold on
+            white would disappear.
+            eslint-disable-next-line @next/next/no-img-element
+          */
+          <img
+            src={config.logo}
+            alt={brand}
+            className="h-14 w-auto rounded-[3px] bg-[#18191A] px-3 py-2 md:h-16"
+          />
+        ) : (
+          <span className={`${serif} text-[22px] leading-none`}>{brand}</span>
+        )}
         <span className="text-[12px] text-[color:var(--muted)]">
           <OpenStatus now={now} clinic={clinic} />
         </span>
@@ -430,6 +451,9 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
           <div key={i} className="h-svh" />
         ))}
       </div>
+
+      {/* The clinic's own landing page, scrolling up over the 3D stage. */}
+      <ClinicDetails config={config} />
     </main>
   );
 }
