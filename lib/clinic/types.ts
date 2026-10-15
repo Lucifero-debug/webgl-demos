@@ -31,8 +31,22 @@ export type DayHours = [open: string, close: string][] | null;
 
 export type ClinicConfig = {
   brand: string;
-  /** The clinic's own logo, shown in the header. */
+  /**
+   * The clinic's own logo, shown in the header.
+   *
+   * It must have a TRANSPARENT background. A logo saved on solid black
+   * shows as a box on the page's near-black, which is what made this one
+   * look stuck on rather than printed.
+   */
   logo?: string;
+  /**
+   * Just the mark from that logo -- no wordmark -- for phone widths.
+   *
+   * A wide lockup shrunk to fit a phone turns its small type into flecks.
+   * The mark alone stays legible at any size. Left out, the full logo is
+   * used at every width.
+   */
+  logoMark?: string;
   /**
    * The clinic's main website. This page is one page about one
    * treatment, so it should always offer a way back to everything else

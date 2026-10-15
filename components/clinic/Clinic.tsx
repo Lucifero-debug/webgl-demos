@@ -533,16 +533,32 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
         >
           {config.logo ? (
             /*
-              The logo is gold on pure black, so it sits on a black chip of
-              its own; on the page's near-black the edge of the picture would
-              otherwise show as a faint rectangle.
-              eslint-disable-next-line @next/next/no-img-element
+              Two crops of the same logo, one per width.
+
+              The lockup is five times wider than it is tall: squeezed into
+              a phone header its three lines of type stop being words and
+              become gold flecks. So a phone gets the mark on its own, and
+              the name is carried by the title and the footer instead.
+
+              Both are keyed to transparency, so they print on the page
+              rather than sitting in a black chip as this header used to.
             */
-            <img
-              src={config.logo}
-              alt={brand}
-              className="h-12 w-auto rounded-[3px] bg-black px-2 py-1.5 md:h-14"
-            />
+            <>
+              {config.logoMark && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={config.logoMark}
+                  alt={brand}
+                  className="h-11 w-auto md:hidden"
+                />
+              )}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={config.logo}
+                alt={brand}
+                className={`h-12 w-auto md:h-14 lg:h-16 ${config.logoMark ? "hidden md:block" : ""}`}
+              />
+            </>
           ) : (
             <span className={`${serif} text-[22px] leading-none`}>{brand}</span>
           )}

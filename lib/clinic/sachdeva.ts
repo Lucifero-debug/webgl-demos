@@ -43,9 +43,19 @@ const HOURS_24: [string, string][] = [["00:00", "24:00"]];
 export const sachdeva: ClinicConfig = {
   // The name on the logo he sent on 15 Oct 2026 (also his Google listing).
   brand: "Dr. Rajat Sachdeva's Dentistry",
-  // His logo, mark and name side by side so it reads at header size
-  // (cut from the stacked original, public/doctor/logo-full.webp).
-  logo: "/doctor/logo-dentistry.webp",
+  /*
+    His logo, mark and name side by side so it reads at header size (cut
+    from the stacked original, public/doctor/logo-full.webp).
+
+    The version used here has had its black keyed out, so the gold sits
+    straight on the page. The original is still at logo-dentistry.webp;
+    it is gold on SOLID BLACK, which drew a visible box on the page's
+    near-black and had to be hidden behind a black chip to look
+    deliberate. On a phone the wordmark is dropped and the mark alone is
+    shown, because three lines of type at 44px are not readable.
+  */
+  logo: "/doctor/logo-dentistry-cut.webp",
+  logoMark: "/doctor/logo-mark.webp",
   website: "https://dentalimplantindia.co.in/dental-clinic/",
   doctor: {
     name: "Dr. Rajat Sachdeva",
