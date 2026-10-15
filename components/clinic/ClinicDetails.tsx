@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import ArchStory from "@/components/clinic/ArchStory";
+import EnquiryForm from "@/components/clinic/EnquiryForm";
+import { PhoneMark, WhatsAppMark } from "@/components/clinic/marks";
 import type { ClinicConfig } from "@/lib/clinic/types";
+import { telLink, waLink } from "@/lib/clinic/whatsapp";
 
 /*
   The clinic's landing page, below the 3D story.
@@ -304,6 +307,7 @@ export default function ClinicDetails({ config }: { config: ClinicConfig }) {
     arch,
     clinic,
     ctaHref,
+    contact,
     brand,
     website,
   } = config;
@@ -818,7 +822,73 @@ export default function ClinicDetails({ config }: { config: ClinicConfig }) {
         </section>
       )}
 
-      <footer className="border-t border-[color:var(--hairline)] px-6 py-10 md:px-10">
+      {/*
+        The enquiry form in the page, not only in the dialog.
+
+        The floating bar's "Enquire" button is for whoever has already
+        decided; this is for whoever read to the end. Same form (one
+        EnquiryForm, so the two cannot drift), with the two direct routes
+        beside it, because a patient who would rather just ring should not
+        have to fill anything in.
+      */}
+      {contact && (
+        <section
+          id="enquiry"
+          className="relative overflow-hidden border-t border-[color:var(--hairline)] px-6 py-24 md:px-10 md:py-32"
+        >
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(45%_55%_at_70%_50%,rgba(217,179,108,0.12)_0%,rgba(217,179,108,0)_70%)]" />
+          <div className="relative mx-auto grid max-w-[72rem] gap-12 lg:grid-cols-[1fr_0.85fr] lg:items-start">
+            <Reveal>
+              <Heading
+                label={contact.form?.label || "Enquiry"}
+                title={contact.form?.title || "Send an enquiry"}
+                body={contact.form?.body}
+              />
+              <div className="mt-9 flex flex-wrap gap-3">
+                <a
+                  href={waLink(contact.whatsapp, contact.openingMessage || "")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-12 items-center gap-2 bg-[#25D366] px-6 text-[14px] font-semibold text-[#0B1C11] transition-colors hover:bg-[#3BDE7C]"
+                >
+                  <WhatsAppMark />
+                  {contact.whatsappLabel || "WhatsApp"}
+                </a>
+                <a href={telLink(contact.phone)} className={`${outline} gap-2`}>
+                  <PhoneMark />
+                  {contact.phone}
+                </a>
+              </div>
+              {clinic.hoursText && (
+                <p className="mt-5 text-[13px] text-[color:var(--muted)]">{clinic.hoursText}</p>
+              )}
+              {/* For the patient who would rather read than message: his
+                  own clinic page, named so they can see where it goes. */}
+              {website && (
+                <a
+                  href={website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-6 inline-flex items-center gap-2 border-b border-[color:var(--hairline)] pb-1 text-[13px] text-[color:var(--accent)] transition-colors hover:border-[color:var(--accent)]"
+                >
+                  More about the clinic at {websiteLabel}
+                  <span aria-hidden="true">→</span>
+                </a>
+              )}
+            </Reveal>
+
+            <Reveal delay={120}>
+              <div className="border border-[color:var(--hairline)] bg-white/[0.02] p-6 md:p-8">
+                <EnquiryForm config={config} />
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      )}
+
+      {/* Extra room at the bottom on a phone: the contact bar is fixed over
+          it, and would otherwise cover the last line. */}
+      <footer className="border-t border-[color:var(--hairline)] px-6 pb-24 pt-10 md:px-10 md:pb-10">
         <div className="mx-auto flex max-w-[72rem] flex-wrap items-center justify-between gap-4 text-[12px] text-[color:var(--muted)]">
           <span>{brand}</span>
           <span>{branches && branches.length > 1 ? branches.map((b) => b.name).join(" · ") : clinic.address}</span>

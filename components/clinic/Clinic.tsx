@@ -3,6 +3,7 @@
 import { lazy, useMemo, useRef, type CSSProperties, type ReactNode } from "react";
 import CanvasStage, { type CameraSetup } from "@/components/CanvasStage";
 import ClinicDetails from "@/components/clinic/ClinicDetails";
+import ContactBar from "@/components/clinic/ContactBar";
 import type { ClinicConfig, PartKey } from "@/lib/clinic/types";
 import { anchors } from "@/lib/stage/anchors";
 import { useNow, zonedTime } from "@/lib/stage/clock";
@@ -220,6 +221,50 @@ function Dimension({ active, label }: { active: boolean; label: string }) {
         {label}
       </span>
     </div>
+  );
+}
+
+/**
+ * Wraps the brand mark in a link to the clinic's own site.
+ *
+ * Clicking the logo to reach the clinic's website is what everyone
+ * expects, and it was the one place on this page his landing page was not
+ * already linked (the Visit section and the footer both carry it).
+ *
+ * `enabled` goes false once the story has handed the screen to the page
+ * below: the header is faded out and transparent to clicks by then, and a
+ * link that is invisible but still clickable and still in the tab order is
+ * a trap. It takes pointer-events-auto only while it can actually be seen,
+ * because the header itself is transparent to clicks so that the 3D object
+ * underneath stays draggable.
+ */
+function BrandLink({
+  href,
+  label,
+  enabled,
+  children,
+}: {
+  href?: string;
+  label: string;
+  enabled: boolean;
+  children: ReactNode;
+}) {
+  // No href: a picture, not a link that goes nowhere.
+  if (!href) return <>{children}</>;
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={label}
+      title={label}
+      tabIndex={enabled ? 0 : -1}
+      className={`inline-flex outline-offset-4 transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-[color:var(--accent)] ${
+        enabled ? "pointer-events-auto" : "pointer-events-none"
+      }`}
+    >
+      {children}
+    </a>
   );
 }
 
@@ -481,21 +526,27 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
       <header
         className={`pointer-events-none fixed inset-x-0 top-0 z-30 flex items-center justify-between px-6 pt-5 md:px-10 md:pt-6 ${storyLayer}`}
       >
-        {config.logo ? (
-          /*
-            The logo is gold on pure black, so it sits on a black chip of
-            its own; on the page's near-black the edge of the picture would
-            otherwise show as a faint rectangle.
-            eslint-disable-next-line @next/next/no-img-element
-          */
-          <img
-            src={config.logo}
-            alt={brand}
-            className="h-12 w-auto rounded-[3px] bg-black px-2 py-1.5 md:h-14"
-          />
-        ) : (
-          <span className={`${serif} text-[22px] leading-none`}>{brand}</span>
-        )}
+        <BrandLink
+          href={config.website}
+          label={`${brand} — visit the clinic's website`}
+          enabled={!atEnd}
+        >
+          {config.logo ? (
+            /*
+              The logo is gold on pure black, so it sits on a black chip of
+              its own; on the page's near-black the edge of the picture would
+              otherwise show as a faint rectangle.
+              eslint-disable-next-line @next/next/no-img-element
+            */
+            <img
+              src={config.logo}
+              alt={brand}
+              className="h-12 w-auto rounded-[3px] bg-black px-2 py-1.5 md:h-14"
+            />
+          ) : (
+            <span className={`${serif} text-[22px] leading-none`}>{brand}</span>
+          )}
+        </BrandLink>
         <span className="text-[12px] text-[color:var(--muted)]">
           <OpenStatus now={now} clinic={clinic} />
         </span>
@@ -510,6 +561,12 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
 
       {/* The clinic's own landing page, scrolling up over the 3D stage. */}
       <ClinicDetails config={config} />
+
+      {/* WhatsApp, call and the enquiry form, over everything. A patient
+          convinced three minutes into the story is wherever the story put
+          them, not beside a button -- so the buttons follow them. Drawn
+          only for a clinic that has set `contact`. */}
+      <ContactBar config={config} />
     </main>
   );
 }

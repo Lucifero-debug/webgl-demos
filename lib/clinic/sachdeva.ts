@@ -78,7 +78,9 @@ export const sachdeva: ClinicConfig = {
   treatments: {
     label: "What we do",
     title: "Implants, and everything that goes with them.",
-    photo: "/doctor/pointing.webp",
+    // The take he asked for, cut out of the green-screen original he sent.
+    // The first one is still at /doctor/pointing.webp if he changes his mind.
+    photo: "/doctor/pointing-2.webp",
     // From the services on his clinic page. CONFIRM the wording.
     items: [
       { name: "Dental implants", detail: "Single teeth to full arches, placed with minimally invasive technique. Over 15,000 placed." },
@@ -506,6 +508,41 @@ export const sachdeva: ClinicConfig = {
   },
   // His WhatsApp, from his clinic page.
   ctaHref: "https://wa.me/919266236271",
+  /*
+    The three he asked for: "prominent call-to-action buttons for WhatsApp
+    Chat, Call for Consultation, and an Enquiry Form", with the form going
+    to WhatsApp rather than email.
+
+    TWO NUMBERS ARE ON HIS SITE. dentalimplantindia.co.in lists
+    98188 94041, 88609 40947 and 92662 36271, and its own WhatsApp button
+    goes to 98188 94041 -- not the 92662 36271 that `ctaHref` above has
+    used all along. Kept on 92662 36271 here so nothing silently moves; ask
+    him which number he wants these on before this goes live, because a
+    chat opened on the wrong one is an enquiry nobody sees.
+  */
+  contact: {
+    whatsapp: "919266236271",
+    phone: "+91 92662 36271",
+    openingMessage:
+      "Hello Dr. Sachdeva, I read your page on dental implants and would like to ask about treatment.",
+    whatsappLabel: "WhatsApp",
+    callLabel: "Call",
+    enquireLabel: "Enquire",
+    form: {
+      label: "Enquiry",
+      title: "Ask Dr. Sachdeva",
+      body: "Leave your number and he or his team will get back to you. Nothing is charged for the first conversation.",
+      // Named so the reply can start where the patient already is, rather
+      // than with "what would you like to know?".
+      subjects: [
+        "Single tooth implant",
+        "Full-arch / All-on-4",
+        "Cost and payment",
+        "Second opinion on a quote",
+        "Something else",
+      ],
+    },
+  },
   clinic: {
     address: "I-101, Ashok Vihar Phase-1, New Delhi 110052",
     phone: "+91 92662 36271",

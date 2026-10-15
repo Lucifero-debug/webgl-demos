@@ -182,6 +182,37 @@ export type ClinicConfig = {
    * no button, so this is required.
    */
   ctaHref: string;
+  /**
+   * The three ways to get in touch, always on screen (ContactBar).
+   *
+   * Asked for by the clinic: a WhatsApp chat, a call, and an enquiry form
+   * whose answers go to WhatsApp rather than to an inbox, "as people are
+   * generally more comfortable using WhatsApp for quick communication than
+   * email". lib/clinic/whatsapp.ts is honest about what that can and
+   * cannot mean on a page with no server behind it.
+   *
+   * Left out, no bar is drawn -- the other demos are not real clinics and
+   * have nobody to ring.
+   */
+  contact?: {
+    /** Digits with the country code; punctuation is stripped. */
+    whatsapp: string;
+    /** As dialled, for the tel: link. */
+    phone: string;
+    /** What the chat opens with, before the patient types anything. */
+    openingMessage?: string;
+    whatsappLabel?: string;
+    callLabel?: string;
+    enquireLabel?: string;
+    form?: {
+      label?: string;
+      title?: string;
+      body?: string;
+      /** The treatments to choose between, named in the message. */
+      subjects?: string[];
+      note?: string;
+    };
+  };
   clinic: {
     address: string;
     phone: string;
