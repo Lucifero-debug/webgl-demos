@@ -236,13 +236,63 @@ texture's red and green channels, which saves a whole download.
 Built for Dr. Rajat Sachdeva's implant clinic, Ashok Vihar
 (`dentalimplantindia.co.in`). Settings in `lib/clinic/sachdeva.ts`.
 
+**15 Oct 2026:** at his request, the content of his clinic page
+(`dentalimplantindia.co.in/dental-clinic/`) was brought onto this one:
+both branches (Ashok Vihar, Moti Nagar) with maps, 24×7 hours, his current
+number and WhatsApp (+91 92662 36271), 22+ years / 15,000+ implants /
+1,00,000+ patients, a numbers band, services, technology, before-and-after
+sliders, awards 2020–24, press, review ratings, "why us", and four YouTube
+testimonials (load only when played). These are optional fields in
+`lib/clinic/types.ts`, rendered by `ClinicDetails.tsx`, so `/clinic`
+(Arden) is unchanged. His images are read from his own site (`SITE` in
+`sachdeva.ts`); `node scripts/fetch-sachdeva.mjs` copies them into
+`public/doctor/site/`, then point `SITE` at `/doctor/site`. Still needed
+from him: degrees, implant system, and the real "completed" counts
+(his site shows "0+").
+
+**His images (15 Oct 2026):** he sent his logo and four pictures, now in
+`public/doctor/`: `logo-dentistry.webp` (the header logo: his stacked
+logo re-cut with the mark beside the name so it reads at header size;
+the original crop is `logo-full.webp`), `why-top.webp` (his online
+presence infographic), `full-arch.webp` (full-arch in 10 days poster),
+`composite.webp` (a teaching-video cover) and `results.webp` (him beside
+a finished smile). The first three go in `features` (picture-led
+sections, placed with `after`); the last sits beside the before-and-after
+heading. Brand is now "Dr. Rajat Sachdeva's Dentistry", as on the logo.
+
+**More 3D (15 Oct 2026):** a second WebGL scene, the full-arch story
+(`ArchStory.tsx` page half, `ArchScene.tsx` scene, model in
+`archModel.ts`): a sticky section several screens tall in which scrolling
+builds a lower jaw, four implants (two tilted 30°, All-on-4), multi-unit
+abutments and a fixed bridge, with four steps lighting up beside it.
+Scroll goes through `lib/clinic/archRuntime.ts` (no three); the canvas
+renders on demand and only while the section is on screen. The tooth
+geometry builders moved from `ImplantScene.tsx` to `toothGeometry.ts` so
+both scenes share them (`implantGeometry(rows, cols)` takes a detail
+level). `archModel.ts` is plain three (no React), so it can be rendered
+outside the app; its poster `public/posters/sachdeva-arch.webp` was
+rendered that way, with a different environment light, so re-save it with
+`?poster` for an exact match. Also: pictures, equipment cards, trophies
+and the gallery photo tilt towards the mouse (`Tilt` in
+`ClinicDetails.tsx`, CSS 3D only, mouse only, off with reduced motion).
+
+**Prices (15 Oct 2026):** he told the user by phone to take his pricing
+from `www.delhidental.com/charges` (another clinic's published list). The
+pricing beat in the 3D story and the full `priceList` section (ten
+foldable categories, `#prices`) carry every price on it, in rupees and
+US dollars, including the ₹1,500 consultation (his own clinic page says
+the consultation is free, so the page no longer says "free" anywhere;
+confirm which with him). All-on-4 is the one addition, from his older
+page. Get that instruction confirmed in writing before the page
+goes live under his name.
+
 - Every clinical claim and price in that file is marked `CONFIRM` and came
   from his website. **Nothing should go live in his name until he has
   approved it**: the prices change, and dental advertising rules in India
   are strict.
 - The page is `noindex` because it carries his clinic's name and
   unconfirmed prices and must not compete with his real site in search.
-- Buttons point at his WhatsApp number.
+- Buttons point at his WhatsApp number (+91 92662 36271, from his clinic page).
 
 If this page ever moves to his own domain, remove the `robots` line in
 `app/implants/page.tsx` and make sure the prices have been confirmed in

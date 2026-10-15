@@ -60,6 +60,8 @@ function openStatus(now: Date, clinic: ClinicConfig["clinic"]) {
   const today = clinic.hours[day] ?? [];
 
   const open = today.find(([from, to]) => time >= from && time < to);
+  // A clinic open round the clock: "until 24:00" would read as a closing time.
+  if (open && open[0] === "00:00" && open[1] === "24:00") return { open: true, text: "Open now, 24×7" };
   if (open) return { open: true, text: `Open now, until ${open[1]}` };
 
   const later = today.find(([from]) => time < from);
@@ -155,12 +157,14 @@ function Callout({
   part,
   name,
   detail,
+  price,
   index,
   active,
 }: {
   part: PartKey;
   name: string;
   detail: string;
+  price?: string;
   index: number;
   active: boolean;
 }) {
@@ -176,6 +180,9 @@ function Callout({
         <span className="whitespace-nowrap text-right leading-tight">
           <span className="block text-[14px]">{name}</span>
           <span className="block text-[12px] text-[color:var(--muted)]">{detail}</span>
+          {price && (
+            <span className="block text-[12px] tabular-nums text-[color:var(--accent)]">{price}</span>
+          )}
         </span>
         <span className="h-px w-12 bg-[color:var(--accent)] opacity-60" />
       </div>
@@ -302,6 +309,7 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
             part={part}
             name={callouts[part].name}
             detail={callouts[part].detail}
+            price={callouts[part].price}
             index={i}
             active={shows(1)}
           />
@@ -353,15 +361,35 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
               >
                 {beat.body}
               </p>
+              {/* On a phone the specs give way to the prices, or the panel
+                  would climb over the part it describes. */}
               <ul
                 className={`mt-6 flex flex-wrap gap-x-5 gap-y-1 text-[13px] tabular-nums ${
                   right ? "landscape:justify-end" : ""
-                }`}
+                } ${beat.prices?.length ? "portrait:hidden" : ""}`}
               >
                 {beat.specs.map((spec) => (
                   <li key={spec}>{spec}</li>
                 ))}
               </ul>
+              {/* The price of this part, beside the part itself. */}
+              {beat.prices && beat.prices.length > 0 && (
+                <ul
+                  className={`mt-6 max-w-[34ch] border-t border-[color:var(--hairline)] text-[14px] ${
+                    right ? "landscape:ml-auto" : ""
+                  }`}
+                >
+                  {beat.prices.map((row) => (
+                    <li
+                      key={row.label}
+                      className="flex items-baseline justify-between gap-5 border-b border-[color:var(--hairline)] py-2"
+                    >
+                      <span className="text-left text-[color:var(--muted)]">{row.label}</span>
+                      <span className="shrink-0 tabular-nums text-[color:var(--accent)]">{row.price}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </Panel>
           );
         })}
@@ -455,15 +483,15 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
       >
         {config.logo ? (
           /*
-            The logo is gold on near-black, so it sits on its own dark
-            chip rather than on the page's pale background, where gold on
-            white would disappear.
+            The logo is gold on pure black, so it sits on a black chip of
+            its own; on the page's near-black the edge of the picture would
+            otherwise show as a faint rectangle.
             eslint-disable-next-line @next/next/no-img-element
           */
           <img
             src={config.logo}
             alt={brand}
-            className="h-14 w-auto rounded-[3px] bg-[#18191A] px-3 py-2 md:h-16"
+            className="h-12 w-auto rounded-[3px] bg-black px-2 py-1.5 md:h-14"
           />
         ) : (
           <span className={`${serif} text-[22px] leading-none`}>{brand}</span>

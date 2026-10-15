@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import ArchStory from "@/components/clinic/ArchStory";
 import type { ClinicConfig } from "@/lib/clinic/types";
 
 /*
@@ -69,8 +70,243 @@ function Heading({ label, title, body }: { label: string; title: string; body?: 
   );
 }
 
+/**
+ * Before and after in one frame: the "after" picture underneath, the
+ * "before" on top, cut off at the handle. A native range input does the
+ * dragging, so it works with a finger, a mouse and the arrow keys.
+ */
+function Compare({ title, before, after }: { title: string; before: string; after: string }) {
+  const [split, setSplit] = useState(50);
+  const pic = "absolute inset-0 h-full w-full object-contain";
+  return (
+    <figure>
+      <div className="relative aspect-[4/3] overflow-hidden bg-[#18191A] select-none">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={after} alt={`${title}, after`} className={pic} loading="lazy" decoding="async" />
+        <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - split}% 0 0)` }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={before} alt={`${title}, before`} className={pic} loading="lazy" decoding="async" />
+        </div>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 w-px bg-[color:var(--accent)]"
+          style={{ left: `${split}%` }}
+        >
+          <span className="absolute left-1/2 top-1/2 flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[color:var(--accent)] text-[13px] text-[#14161A]">
+            ↔
+          </span>
+        </div>
+        <span className="pointer-events-none absolute left-3 top-3 bg-black/55 px-2 py-1 text-[11px]">Before</span>
+        <span className="pointer-events-none absolute right-3 top-3 bg-black/55 px-2 py-1 text-[11px]">After</span>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={split}
+          onChange={(e) => setSplit(Number(e.target.value))}
+          aria-label={`${title}: drag to compare before and after`}
+          className="absolute inset-0 h-full w-full cursor-ew-resize opacity-0"
+        />
+      </div>
+      <figcaption className="mt-3 text-[14px]">{title}</figcaption>
+    </figure>
+  );
+}
+
+/**
+ * A YouTube video that costs nothing until it is played: a thumbnail and a
+ * play button, swapped for the real player on click. Four embedded players
+ * would otherwise download several megabytes of YouTube before anyone has
+ * asked for one.
+ */
+function Video({ id, index }: { id: string; index: number }) {
+  const [playing, setPlaying] = useState(false);
+  if (playing) {
+    return (
+      <iframe
+        className="aspect-video w-full"
+        src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`}
+        title={`Patient testimonial ${index + 1}`}
+        allow="autoplay; encrypted-media; picture-in-picture"
+        allowFullScreen
+      />
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => setPlaying(true)}
+      className="group relative block aspect-video w-full overflow-hidden bg-[#18191A]"
+      aria-label={`Play patient testimonial ${index + 1}`}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`}
+        alt=""
+        className="h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
+        loading="lazy"
+        decoding="async"
+      />
+      <span className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[color:var(--accent)] pl-1 text-[18px] text-[#14161A] transition-transform group-hover:scale-105">
+        ▶
+      </span>
+    </button>
+  );
+}
+
+const section = "border-t border-[color:var(--hairline)] px-6 py-24 md:px-10 md:py-32";
+
+/**
+ * Tilts its contents towards the mouse, like a card held up to the light,
+ * with a soft glare that follows the pointer. CSS 3D only, no WebGL.
+ *
+ * Mouse only: on a touch screen a finger is scrolling, not hovering.
+ * Off for visitors who ask for reduced motion.
+ */
+function Tilt({ children, className = "", max = 7 }: { children: ReactNode; className?: string; max?: number }) {
+  const el = useRef<HTMLDivElement>(null);
+  const glare = useRef<HTMLSpanElement>(null);
+
+  const move = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const node = el.current;
+    if (!node || event.pointerType !== "mouse") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const rect = node.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width - 0.5;
+    const y = (event.clientY - rect.top) / rect.height - 0.5;
+    node.style.transition = "transform 120ms ease-out";
+    node.style.transform = `perspective(1000px) rotateX(${(-y * max).toFixed(2)}deg) rotateY(${(x * max).toFixed(2)}deg) scale(1.02)`;
+    if (glare.current) {
+      glare.current.style.opacity = "1";
+      glare.current.style.background = `radial-gradient(circle at ${((x + 0.5) * 100).toFixed(1)}% ${((y + 0.5) * 100).toFixed(1)}%, rgba(255,240,210,0.22), rgba(255,240,210,0) 55%)`;
+    }
+  };
+
+  const leave = () => {
+    const node = el.current;
+    if (!node) return;
+    node.style.transition = "transform 600ms cubic-bezier(.2,.7,.2,1)";
+    node.style.transform = "";
+    if (glare.current) glare.current.style.opacity = "0";
+  };
+
+  return (
+    <div
+      ref={el}
+      onPointerMove={move}
+      onPointerLeave={leave}
+      className={`relative will-change-transform [transform-style:preserve-3d] ${className}`}
+    >
+      {children}
+      <span
+        ref={glare}
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-0 mix-blend-screen transition-opacity duration-300"
+      />
+    </div>
+  );
+}
+
+type Feature = NonNullable<ClinicConfig["features"]>[number];
+
+/**
+ * One of his own pictures beside a short story. Alternate ones put the
+ * picture on the other side, so a run of them doesn't read as a template.
+ */
+function FeatureSection({ feature, flip }: { feature: Feature; flip: boolean }) {
+  return (
+    <section className={`relative overflow-hidden ${section}`}>
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(45%_55%_at_70%_50%,rgba(217,179,108,0.10)_0%,rgba(217,179,108,0)_70%)]" />
+      <div
+        className={`relative mx-auto grid max-w-[72rem] items-center gap-12 ${
+          // The picture's column stays the narrow one on whichever side it sits.
+          feature.tall
+            ? flip
+              ? "lg:grid-cols-[0.6fr_1fr]"
+              : "lg:grid-cols-[1fr_0.6fr]"
+            : flip
+              ? "lg:grid-cols-[0.85fr_1fr]"
+              : "lg:grid-cols-[1fr_0.85fr]"
+        }`}
+      >
+        <div className={flip ? "lg:order-2" : ""}>
+          <Reveal>
+            <Heading label={feature.label} title={feature.title} body={feature.body} />
+            {feature.figures && (
+              <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-6 border-t border-[color:var(--hairline)] pt-7 sm:grid-cols-3">
+                {feature.figures.map((item) => (
+                  <div key={item.label}>
+                    <dt className="font-[family-name:var(--font-serif)] text-[clamp(1.5rem,2.6vw,2rem)] font-light leading-none text-[color:var(--accent)]">
+                      {item.figure}
+                    </dt>
+                    <dd className="mt-1.5 text-[12px] leading-snug text-[color:var(--muted)]">{item.label}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+            {feature.points && (
+              <ul className="mt-9 space-y-3 border-t border-[color:var(--hairline)] pt-7 text-[15px]">
+                {feature.points.map((point) => (
+                  <li key={point} className="flex gap-3">
+                    <span aria-hidden="true" className="text-[color:var(--accent)]">—</span>
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {feature.link && (
+              <a
+                href={feature.link.href}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-9 inline-flex h-12 items-center border border-[color:var(--hairline)] px-6 text-[14px] font-medium transition-colors hover:border-[color:var(--accent)] hover:text-[color:var(--accent)]"
+              >
+                {feature.link.text}
+              </a>
+            )}
+          </Reveal>
+        </div>
+        <div className={flip ? "lg:order-1" : ""}>
+          <Reveal delay={120}>
+            <Tilt className={`mx-auto w-full ${feature.tall ? "max-w-[380px]" : "max-w-[520px]"}`}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={feature.image}
+                alt={feature.imageAlt}
+                className="block w-full shadow-[0_40px_90px_rgba(0,0,0,0.6)]"
+                loading="lazy"
+                decoding="async"
+              />
+            </Tilt>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function ClinicDetails({ config }: { config: ClinicConfig }) {
-  const { doctor, treatments, faq, visit, clinic, ctaHref, brand, website } = config;
+  const {
+    doctor,
+    stats,
+    treatments,
+    technology,
+    gallery,
+    recognition,
+    reasons,
+    testimonials,
+    faq,
+    priceList,
+    visit,
+    branches,
+    socials,
+    features,
+    arch,
+    clinic,
+    ctaHref,
+    brand,
+    website,
+  } = config;
   // Shown without the scheme or the www: a web address a patient reads,
   // not a URL.
   const websiteLabel = website?.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, "");
@@ -79,6 +315,12 @@ export default function ClinicDetails({ config }: { config: ClinicConfig }) {
     "inline-flex h-12 items-center bg-[color:var(--accent)] px-6 text-[14px] font-semibold text-[#14161A] transition-colors hover:bg-[#E8C68A]";
   const outline =
     "inline-flex h-12 items-center border border-[color:var(--hairline)] px-6 text-[14px] font-medium transition-colors hover:border-[color:var(--accent)] hover:text-[color:var(--accent)]";
+
+  const featuresAfter = (where: Feature["after"]) =>
+    (features ?? [])
+      .map((feature, i) => ({ feature, i }))
+      .filter(({ feature }) => feature.after === where)
+      .map(({ feature, i }) => <FeatureSection key={feature.title} feature={feature} flip={i % 2 === 1} />);
 
   return (
     <div className="relative z-20 bg-[color:var(--ground)]">
@@ -131,6 +373,26 @@ export default function ClinicDetails({ config }: { config: ClinicConfig }) {
         </section>
       )}
 
+      {featuresAfter("doctor")}
+
+      {/* The clinic in numbers, straight after the man who runs it. */}
+      {stats && stats.length > 0 && (
+        <section className="border-t border-[color:var(--hairline)] px-6 py-16 md:px-10 md:py-20">
+          <Reveal>
+            <dl className="mx-auto grid max-w-[72rem] grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-4">
+              {stats.map((item) => (
+                <div key={item.label}>
+                  <dt className={`${serif} text-[clamp(2rem,3.6vw,3rem)] font-light leading-none text-[color:var(--accent)]`}>
+                    {item.figure}
+                  </dt>
+                  <dd className="mt-2 text-[13px] leading-snug text-[color:var(--muted)]">{item.label}</dd>
+                </div>
+              ))}
+            </dl>
+          </Reveal>
+        </section>
+      )}
+
       {treatments && (
         <section className="border-t border-[color:var(--hairline)] px-6 py-24 md:px-10 md:py-32">
           <div className="mx-auto grid max-w-[72rem] items-center gap-12 lg:grid-cols-[1fr_0.72fr]">
@@ -160,6 +422,262 @@ export default function ClinicDetails({ config }: { config: ClinicConfig }) {
                 />
               </Reveal>
             )}
+          </div>
+        </section>
+      )}
+
+      {/* Full-arch in 3D, then his own poster of a real full-arch case. */}
+      {arch && <ArchStory arch={arch} ctaHref={ctaHref} />}
+
+      {featuresAfter("treatments")}
+
+      {technology && (
+        <section className={section}>
+          <div className="mx-auto max-w-[72rem]">
+            <Reveal>
+              <Heading label={technology.label} title={technology.title} body={technology.body} />
+            </Reveal>
+            <div className="mt-12 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+              {technology.items.map((item, i) => (
+                <Reveal key={item.name} delay={(i % 4) * 80}>
+                  <figure>
+                    <Tilt max={9}>
+                    <div className="aspect-[4/3] overflow-hidden bg-[#18191A]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.photo}
+                        alt={item.name}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                    </Tilt>
+                    <figcaption className="mt-4">
+                      <span className="block text-[16px]">{item.name}</span>
+                      <span className="mt-1 block text-[14px] leading-relaxed text-[color:var(--muted)]">
+                        {item.detail}
+                      </span>
+                    </figcaption>
+                  </figure>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {gallery && (
+        <section className={section}>
+          <div className="mx-auto max-w-[72rem]">
+            <div className="grid items-end gap-10 md:grid-cols-[1fr_auto]">
+              <Reveal>
+                <Heading label={gallery.label} title={gallery.title} body={gallery.body} />
+              </Reveal>
+              {gallery.photo && (
+                <Reveal delay={120}>
+                  <Tilt className="w-fit">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={gallery.photo}
+                      alt={gallery.photoAlt ?? ""}
+                      className="block w-[220px] shadow-[0_30px_70px_rgba(0,0,0,0.55)] md:w-[260px]"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </Tilt>
+                </Reveal>
+              )}
+            </div>
+            <div className="mt-12 grid gap-x-8 gap-y-12 md:grid-cols-2">
+              {gallery.items.map((item, i) => (
+                <Reveal key={item.title} delay={(i % 2) * 100}>
+                  <Compare {...item} />
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {recognition && (
+        <section className={`relative overflow-hidden ${section}`}>
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_50%_at_50%_30%,rgba(217,179,108,0.12)_0%,rgba(217,179,108,0)_70%)]" />
+          <div className="relative mx-auto max-w-[72rem]">
+            <Reveal>
+              <Heading label={recognition.label} title={recognition.title} body={recognition.body} />
+            </Reveal>
+            <ol className="mt-12 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
+              {recognition.awards.map((award, i) => (
+                <li key={award.year}>
+                  <Reveal delay={i * 80}>
+                    {award.photo && (
+                      <Tilt max={14} className="w-fit">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={award.photo}
+                          alt={`${award.year} award trophy`}
+                          className="block h-36 w-auto object-contain"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </Tilt>
+                    )}
+                    <p className={`${serif} mt-4 text-[28px] font-light leading-none text-[color:var(--accent)]`}>
+                      {award.year}
+                    </p>
+                    <p className="mt-2 text-[15px] leading-snug">{award.name}</p>
+                    <p className="mt-1 text-[13px] text-[color:var(--muted)]">{award.by}</p>
+                  </Reveal>
+                </li>
+              ))}
+            </ol>
+
+            {recognition.honour && (
+              <Reveal>
+                <figure className="mt-20 grid items-center gap-8 border-t border-[color:var(--hairline)] pt-12 md:grid-cols-[0.9fr_1fr]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={recognition.honour.photo}
+                    alt={recognition.honour.text}
+                    className="w-full object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <figcaption className={`${serif} text-[clamp(1.6rem,2.8vw,2.4rem)] font-light leading-[1.15]`}>
+                    {recognition.honour.text}
+                  </figcaption>
+                </figure>
+              </Reveal>
+            )}
+
+            {!!(recognition.ratings?.length || recognition.press?.length) && (
+              <Reveal>
+                <div className="mt-20 grid gap-12 border-t border-[color:var(--hairline)] pt-12 lg:grid-cols-2">
+                  {recognition.ratings && recognition.ratings.length > 0 && (
+                    <div>
+                      {recognition.reviewsLine && <p className="text-[17px]">{recognition.reviewsLine}</p>}
+                      <ul className="mt-6 grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-4">
+                        {recognition.ratings.map((r) => (
+                          <li key={r.site} className="flex items-baseline justify-between border-b border-[color:var(--hairline)] pb-2 text-[14px]">
+                            <span className="text-[color:var(--muted)]">{r.site}</span>
+                            <span className="tabular-nums text-[color:var(--accent)]">{r.score}★</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {recognition.press && recognition.press.length > 0 && (
+                    <div>
+                      <p className="text-[13px] tracking-wide text-[color:var(--accent)]">Featured in</p>
+                      <ul className={`${serif} mt-5 flex flex-wrap gap-x-7 gap-y-3 text-[clamp(1.1rem,1.8vw,1.4rem)] font-light`}>
+                        {recognition.press.map((name) => (
+                          <li key={name}>{name}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </Reveal>
+            )}
+          </div>
+        </section>
+      )}
+
+      {reasons && (
+        <section className={section}>
+          <div className="mx-auto max-w-[72rem]">
+            <Reveal>
+              <Heading label={reasons.label} title={reasons.title} />
+            </Reveal>
+            <div className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+              {reasons.groups.map((group, i) => (
+                <Reveal key={group.title} delay={i * 80}>
+                  <div className="border-t border-[color:var(--accent)] pt-5">
+                    <h3 className="text-[17px]">{group.title}</h3>
+                    <ul className="mt-4 space-y-2 text-[14px] leading-relaxed text-[color:var(--muted)]">
+                      {group.points.map((point) => (
+                        <li key={point}>{point}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {featuresAfter("reasons")}
+
+      {testimonials && testimonials.videos.length > 0 && (
+        <section className={section}>
+          <div className="mx-auto max-w-[72rem]">
+            <Reveal>
+              <Heading label={testimonials.label} title={testimonials.title} body={testimonials.body} />
+            </Reveal>
+            <div className="mt-12 grid gap-6 md:grid-cols-2">
+              {testimonials.videos.map((id, i) => (
+                <Reveal key={id} delay={(i % 2) * 100}>
+                  <Video id={id} index={i} />
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {priceList && (
+        <section id="prices" className={section}>
+          <div className="mx-auto max-w-[72rem]">
+            <Reveal>
+              <Heading label={priceList.label} title={priceList.title} body={priceList.body} />
+            </Reveal>
+            <Reveal delay={100}>
+              <div className="mt-12 grid gap-x-12 lg:grid-cols-2">
+                {[0, 1].map((col) => (
+                  <div key={col} className="divide-y divide-[color:var(--hairline)] border-y border-[color:var(--hairline)] lg:border-b-0 [&:last-child]:border-t-0 lg:[&:last-child]:border-t">
+                    {/* Split in two halves, not alternately, so on a phone
+                        (one column) the groups keep their order. */}
+                    {priceList.groups
+                      .slice(col === 0 ? 0 : Math.ceil(priceList.groups.length / 2), col === 0 ? Math.ceil(priceList.groups.length / 2) : undefined)
+                      .map((group, i) => (
+                        /* Native details, like the FAQ: no script needed, and the
+                           browser's find reaches the prices inside. The first
+                           group (implants, the reason for this page) starts open. */
+                        <details key={group.title} className="group py-5" open={col === 0 && i === 0}>
+                          <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-[17px] transition-colors hover:text-[color:var(--accent)]">
+                            {group.title}
+                            <span className="shrink-0 text-[color:var(--accent)] transition-transform duration-300 group-open:rotate-45">
+                              +
+                            </span>
+                          </summary>
+                          <ul className="mt-4">
+                            {group.rows.map((row) => (
+                              <li
+                                key={row.item}
+                                className="flex items-baseline justify-between gap-6 border-t border-[color:var(--hairline)] py-2.5 text-[14px]"
+                              >
+                                <span className="text-[color:var(--muted)]">{row.item}</span>
+                                <span className="shrink-0 text-right tabular-nums">
+                                  {row.price}
+                                  {row.usd && (
+                                    <span className="block text-[12px] text-[color:var(--muted)]">{row.usd}</span>
+                                  )}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </details>
+                      ))}
+                  </div>
+                ))}
+              </div>
+            </Reveal>
+            <p className="mt-8 max-w-[62ch] text-[12px] leading-relaxed text-[color:var(--muted)]">{priceList.note}</p>
+            <a href={ctaHref} className={`mt-8 ${gold}`}>
+              Book a consultation
+            </a>
           </div>
         </section>
       )}
@@ -206,10 +724,29 @@ export default function ClinicDetails({ config }: { config: ClinicConfig }) {
             <Reveal>
               <Heading label={visit.label} title={visit.title} body={visit.body} />
               <dl className="mt-9 space-y-5 text-[15px]">
-                <div>
-                  <dt className="text-[12px] text-[color:var(--muted)]">Clinic</dt>
-                  <dd>{clinic.address}</dd>
-                </div>
+                {branches && branches.length > 0 ? (
+                  branches.map((branch) => (
+                    <div key={branch.name}>
+                      <dt className="text-[12px] text-[color:var(--muted)]">{branch.name}</dt>
+                      <dd>
+                        {branch.address}{" "}
+                        <a
+                          className="whitespace-nowrap text-[13px] text-[color:var(--accent)] hover:underline"
+                          href={branch.directions}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Directions
+                        </a>
+                      </dd>
+                    </div>
+                  ))
+                ) : (
+                  <div>
+                    <dt className="text-[12px] text-[color:var(--muted)]">Clinic</dt>
+                    <dd>{clinic.address}</dd>
+                  </div>
+                )}
                 {clinic.phone && (
                   <div>
                     <dt className="text-[12px] text-[color:var(--muted)]">Phone</dt>
@@ -220,12 +757,12 @@ export default function ClinicDetails({ config }: { config: ClinicConfig }) {
                     </dd>
                   </div>
                 )}
-                <div>
-                  <dt className="text-[12px] text-[color:var(--muted)]">Hours</dt>
-                  <dd className="text-[color:var(--muted)]">
-                    Mon–Sat 9:30–13:30 and 16:30–20:30 · Sun 10:00–13:30
-                  </dd>
-                </div>
+                {clinic.hoursText && (
+                  <div>
+                    <dt className="text-[12px] text-[color:var(--muted)]">Hours</dt>
+                    <dd className="text-[color:var(--muted)]">{clinic.hoursText}</dd>
+                  </div>
+                )}
               </dl>
               <div className="mt-9 flex flex-wrap gap-3">
                 <a className={gold} href={ctaHref}>
@@ -257,13 +794,43 @@ export default function ClinicDetails({ config }: { config: ClinicConfig }) {
               </Reveal>
             )}
           </div>
+          {/* A map per branch. Loaded lazily: two Google Maps frames are
+              heavy, and most visitors never scroll this far. */}
+          {branches && branches.length > 0 && (
+            <div className="relative mx-auto mt-16 grid max-w-[72rem] gap-6 md:grid-cols-2">
+              {branches.map((branch) => (
+                <figure key={branch.name}>
+                  <iframe
+                    src={branch.mapEmbed}
+                    title={`Map: ${brand}, ${branch.name}`}
+                    className="aspect-[4/3] w-full border-0 grayscale-[0.4] invert-[0.9] hue-rotate-180"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                  <figcaption className="mt-3 text-[14px]">
+                    {branch.name}
+                    <span className="text-[color:var(--muted)]"> · {branch.address}</span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          )}
         </section>
       )}
 
       <footer className="border-t border-[color:var(--hairline)] px-6 py-10 md:px-10">
         <div className="mx-auto flex max-w-[72rem] flex-wrap items-center justify-between gap-4 text-[12px] text-[color:var(--muted)]">
           <span>{brand}</span>
-          <span>{clinic.address}</span>
+          <span>{branches && branches.length > 1 ? branches.map((b) => b.name).join(" · ") : clinic.address}</span>
+          {socials && socials.length > 0 && (
+            <span className="flex flex-wrap gap-x-4">
+              {socials.map((s) => (
+                <a key={s.name} className="hover:text-[color:var(--accent)]" href={s.href} target="_blank" rel="noreferrer">
+                  {s.name}
+                </a>
+              ))}
+            </span>
+          )}
           {website && (
             <a className="hover:text-[color:var(--accent)]" href={website}>
               {websiteLabel}
