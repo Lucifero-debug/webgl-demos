@@ -300,10 +300,25 @@ export const sachdeva: ClinicConfig = {
         "Digital planning and 3D-guided placement",
         "Planned for safe, predictable, long-lasting results",
       ],
-      // No picture here on purpose. His "10 DAYS!" poster used to sit
-      // beside this copy; it was asked to come off the page, and the
-      // section now runs as a single column of words. The file is still
-      // at /doctor/full-arch.webp if it is ever wanted back.
+      /*
+        His teleconsultation poster. It replaces the "10 DAYS!" poster
+        that used to sit here (still at /doctor/full-arch.webp).
+
+        NOTE the poster is about teleconsultation and its fees, while the
+        words beside it are about full-arch implants -- they are not
+        saying the same thing. It works as "here is the treatment, and
+        here is how to start without travelling", but if the section is
+        meant to be ABOUT teleconsultation the label, title and points
+        above should change with it.
+
+        CONFIRM the two fees on it: ₹1,500 matches the consultation fee
+        the Visit section already quotes, but ₹3,500 for the
+        comprehensive package appears nowhere else on this page.
+      */
+      image: "/doctor/teleconsultation.webp",
+      imageAlt:
+        "Teleconsultation and teledentistry with Dr. Rajat Sachdeva, a Delhi dentist: consultation ₹1,500, comprehensive package ₹3,500",
+      tall: true,
     },
     {
       after: "reasons",
