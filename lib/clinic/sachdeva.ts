@@ -133,6 +133,21 @@ export const sachdeva: ClinicConfig = {
       { year: "2023", name: "Best Dental Clinic in India", by: "International Business Award", photo: img("trophy/4.png") },
       { year: "2024", name: "Best Dental Clinic in India", by: "International Excellence Award", photo: img("trophy/5.png") },
     ],
+    /*
+      His own recognition poster, as he published it. Shown whole rather
+      than picked apart: the claims on it are his, worded by him, and the
+      alt text repeats them so a screen reader gets the same.
+
+      Note it names two outlets the press list below does not -- Delhi
+      Times and Business World -- and says "Forbes India" where the list
+      says "Forbes". Left as they are on both until he confirms which
+      wording he wants.
+    */
+    poster: {
+      image: "/doctor/recognition.webp",
+      alt: "Dr. Rajat Sachdeva, MDS MBA, recognised among leading names in dentistry: Times Health Icons Awards, Delhi Times featured expert, Forbes India and Business World. “Awards and recognitions are always special, but the real achievement is the faith patients place in us every single day.”",
+      caption: "Times Health Icons Awards · Delhi Times · Forbes India · Business World",
+    },
     honour: {
       text: "Dr. Sachdeva honoured by a former President of India.",
       photo: img("international/award.png"),
@@ -285,9 +300,10 @@ export const sachdeva: ClinicConfig = {
         "Digital planning and 3D-guided placement",
         "Planned for safe, predictable, long-lasting results",
       ],
-      image: "/doctor/full-arch.webp",
-      imageAlt: "Full-arch dental implants in 10 days: a patient before, and with fixed teeth after 10 days",
-      tall: true,
+      // No picture here on purpose. His "10 DAYS!" poster used to sit
+      // beside this copy; it was asked to come off the page, and the
+      // section now runs as a single column of words. The file is still
+      // at /doctor/full-arch.webp if it is ever wanted back.
     },
     {
       after: "reasons",

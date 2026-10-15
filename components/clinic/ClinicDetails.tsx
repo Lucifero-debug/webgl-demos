@@ -217,22 +217,25 @@ type Feature = NonNullable<ClinicConfig["features"]>[number];
  * picture on the other side, so a run of them doesn't read as a template.
  */
 function FeatureSection({ feature, flip }: { feature: Feature; flip: boolean }) {
+  // No picture: one column, held to a reading width. A two-column grid
+  // with nothing in the second column leaves the text stretched across
+  // the page beside an empty half.
+  const columns = !feature.image
+    ? "lg:max-w-[52rem]"
+    : // The picture's column stays the narrow one on whichever side it sits.
+      feature.tall
+      ? flip
+        ? "lg:grid-cols-[0.6fr_1fr]"
+        : "lg:grid-cols-[1fr_0.6fr]"
+      : flip
+        ? "lg:grid-cols-[0.85fr_1fr]"
+        : "lg:grid-cols-[1fr_0.85fr]";
+
   return (
     <section className={`relative overflow-hidden ${section}`}>
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(45%_55%_at_70%_50%,rgba(217,179,108,0.10)_0%,rgba(217,179,108,0)_70%)]" />
-      <div
-        className={`relative mx-auto grid max-w-[72rem] items-center gap-12 ${
-          // The picture's column stays the narrow one on whichever side it sits.
-          feature.tall
-            ? flip
-              ? "lg:grid-cols-[0.6fr_1fr]"
-              : "lg:grid-cols-[1fr_0.6fr]"
-            : flip
-              ? "lg:grid-cols-[0.85fr_1fr]"
-              : "lg:grid-cols-[1fr_0.85fr]"
-        }`}
-      >
-        <div className={flip ? "lg:order-2" : ""}>
+      <div className={`relative mx-auto grid max-w-[72rem] items-center gap-12 ${columns}`}>
+        <div className={flip && feature.image ? "lg:order-2" : ""}>
           <Reveal>
             <Heading label={feature.label} title={feature.title} body={feature.body} />
             {feature.figures && (
@@ -269,20 +272,22 @@ function FeatureSection({ feature, flip }: { feature: Feature; flip: boolean }) 
             )}
           </Reveal>
         </div>
-        <div className={flip ? "lg:order-1" : ""}>
-          <Reveal delay={120}>
-            <Tilt className={`mx-auto w-full ${feature.tall ? "max-w-[380px]" : "max-w-[520px]"}`}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={feature.image}
-                alt={feature.imageAlt}
-                className="block w-full shadow-[0_40px_90px_rgba(0,0,0,0.6)]"
-                loading="lazy"
-                decoding="async"
-              />
-            </Tilt>
-          </Reveal>
-        </div>
+        {feature.image && (
+          <div className={flip ? "lg:order-1" : ""}>
+            <Reveal delay={120}>
+              <Tilt className={`mx-auto w-full ${feature.tall ? "max-w-[380px]" : "max-w-[520px]"}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={feature.image}
+                  alt={feature.imageAlt || ""}
+                  className="block w-full shadow-[0_40px_90px_rgba(0,0,0,0.6)]"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </Tilt>
+            </Reveal>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -837,14 +842,64 @@ export default function ClinicDetails({ config }: { config: ClinicConfig }) {
           className="relative overflow-hidden border-t border-[color:var(--hairline)] px-6 py-24 md:px-10 md:py-32"
         >
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(45%_55%_at_70%_50%,rgba(217,179,108,0.12)_0%,rgba(217,179,108,0)_70%)]" />
-          <div className="relative mx-auto grid max-w-[72rem] gap-12 lg:grid-cols-[1fr_0.85fr] lg:items-start">
+          {/*
+            Two columns of roughly equal weight: his poster under the
+            heading on one side, the form on the other.
+
+            The quick-contact buttons sit UNDER the form rather than under
+            the heading, and that is what makes the poster fit. With the
+            buttons, hours and link all stacked on the left, the poster had
+            to shrink to about 200px to keep the two sides level -- at
+            which point its own small type is unreadable and it is a
+            decoration rather than a claim. Moved across, the left column
+            has room for it at a size you can actually read, and the right
+            column's form plus buttons comes out to about the same height.
+          */}
+          <div className="relative mx-auto grid max-w-[72rem] gap-12 lg:grid-cols-[1fr_0.9fr] lg:items-start">
             <Reveal>
               <Heading
                 label={contact.form?.label || "Enquiry"}
                 title={contact.form?.title || "Send an enquiry"}
                 body={contact.form?.body}
               />
-              <div className="mt-9 flex flex-wrap gap-3">
+
+              {/*
+                His recognition poster, here rather than in the awards
+                section. Among the trophies it was a second, louder telling
+                of the same thing; beside the form it is doing a job --
+                this is the moment a patient decides whether to hand over
+                their number, and it answers "who am I writing to?" without
+                another paragraph of copy.
+              */}
+              {recognition?.poster && (
+                <figure className="mt-10">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={recognition.poster.image}
+                    alt={recognition.poster.alt}
+                    className="block w-full max-w-[480px] shadow-[0_30px_70px_rgba(0,0,0,0.55)]"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  {/* Balanced, and held to the picture's own width: the
+                      last outlet was dropping onto a line of its own. */}
+                  {recognition.poster.caption && (
+                    <figcaption className="mt-4 max-w-[480px] text-[12px] leading-relaxed text-[color:var(--muted)] [text-wrap:balance]">
+                      {recognition.poster.caption}
+                    </figcaption>
+                  )}
+                </figure>
+              )}
+            </Reveal>
+
+            <Reveal delay={120}>
+              <div className="border border-[color:var(--hairline)] bg-white/[0.02] p-6 md:p-8">
+                <EnquiryForm config={config} />
+              </div>
+
+              {/* For whoever would rather not type at all. */}
+              <p className="mt-9 text-[13px] text-[color:var(--muted)]">Or reach him directly</p>
+              <div className="mt-3 flex flex-wrap gap-3">
                 <a
                   href={waLink(contact.whatsapp, contact.openingMessage || "")}
                   target="_blank"
@@ -875,12 +930,6 @@ export default function ClinicDetails({ config }: { config: ClinicConfig }) {
                   <span aria-hidden="true">→</span>
                 </a>
               )}
-            </Reveal>
-
-            <Reveal delay={120}>
-              <div className="border border-[color:var(--hairline)] bg-white/[0.02] p-6 md:p-8">
-                <EnquiryForm config={config} />
-              </div>
             </Reveal>
           </div>
         </section>

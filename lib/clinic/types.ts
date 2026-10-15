@@ -84,6 +84,20 @@ export type ClinicConfig = {
     title: string;
     body?: string;
     awards: { year: string; name: string; by: string; photo?: string }[];
+    /**
+     * The clinic's own recognition poster, shown whole.
+     *
+     * A piece of their artwork rather than a photograph: it carries its
+     * own headline, logos and quote, so nothing is written beside it to
+     * repeat what it already says, and `alt` has to carry that text for
+     * anyone who cannot see it.
+     *
+     * It lives under `recognition` because that is what it is about, but
+     * it is DRAWN beside the enquiry form at the end of the page, where a
+     * patient is deciding whether to send their number. Among the award
+     * trophies it was the same claim told twice.
+     */
+    poster?: { image: string; alt: string; caption?: string };
     honour?: { text: string; photo: string };
     press?: string[];
     ratings?: { site: string; score: string }[];
@@ -132,8 +146,13 @@ export type ClinicConfig = {
     /** Short points, or figures when `figures` is set. */
     points?: string[];
     figures?: { figure: string; label: string }[];
-    image: string;
-    imageAlt: string;
+    /**
+     * One of his pictures beside the story. Optional: left out, the
+     * section is the words alone, set in a single readable column
+     * rather than a half-empty grid.
+     */
+    image?: string;
+    imageAlt?: string;
     /** Portrait posters (9:16) are shown narrower than square images. */
     tall?: boolean;
     link?: { text: string; href: string };
