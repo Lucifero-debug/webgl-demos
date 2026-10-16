@@ -149,6 +149,22 @@ export type ClinicConfig = {
     cta?: string;
   };
   /**
+   * A third 3D story: one implant placed with computer navigation (X-Nav).
+   * The implant is planned in 3D, a tracked drill follows the plan, the
+   * implant goes in where planned and a crown goes on, with the price
+   * building up beside it. The steps start at NAV_STEPS in
+   * lib/clinic/navRuntime.ts.
+   */
+  navigated?: PricedStoryConfig;
+  /**
+   * A fourth 3D story: full-mouth robotic rehabilitation. Both arches,
+   * scanned and planned, every implant placed by a robotic arm, a titanium
+   * frame on each, then the zirconia prosthesis -- the price building up
+   * beside it. Steps start at ROBOT_STEPS in lib/clinic/robotRuntime.ts.
+   * Keep at least one ordinary section between this and any other 3D story.
+   */
+  robotic?: PricedStoryConfig;
+  /**
    * Picture-led sections: one of his own images beside a short story.
    * `after` says where each one sits among the other sections.
    */
@@ -258,4 +274,23 @@ export type ClinicConfig = {
   };
   /** Shown small in the finale. */
   note: string;
+};
+
+/**
+ * A 3D scroll story with its price building up beside it
+ * (components/clinic/PricedStory.tsx): the X-Nav and robotic sections.
+ */
+export type PricedStoryConfig = {
+  label: string;
+  title: string;
+  body: string;
+  steps: { title: string; detail: string }[];
+  /** Each row lights up once the story reaches step `from` (0-based). */
+  prices: { item: string; note?: string; price: string; from: number }[];
+  /** Shown in full once the last step is reached. */
+  total: { item: string; price: string };
+  note?: string;
+  /** Shown until the 3D loads. Save one with ?poster. */
+  poster: string;
+  cta?: string;
 };

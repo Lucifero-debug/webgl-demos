@@ -293,6 +293,61 @@ rendered that way, with a different environment light, so re-save it with
 and the gallery photo tilt towards the mouse (`Tilt` in
 `ClinicDetails.tsx`, CSS 3D only, mouse only, off with reduced motion).
 
+**X-Nav section (16 Oct 2026):** a third WebGL story, placed right after
+the "Inside the clinic" technology section -- deliberately NOT next to the
+full-arch story: the client said two 3D stories back to back lose their
+impact, so keep at least one ordinary section between any two of them.
+One implant placed with computer navigation. Same shape
+as the full-arch story -- `NavStory.tsx` (page half), `NavScene.tsx`
+(scene), `navModel.ts` (plain three: `buildNav` / `poseNav`),
+`lib/clinic/navRuntime.ts` (`NAV_STEPS = [0, 0.2, 0.5, 0.74]`), settings in
+`navigated` in `sachdeva.ts`, typed in `lib/clinic/types.ts`. The story: a
+jaw segment with a gap and the nerve canal; the gum clears and the implant
+is planned as a gold ghost with its axis and entry ring, clear of the
+nerve; a drill carrying a three-marker tracker comes down the planned axis
+while the tracking camera's lines lock onto it and onto a marker clip on
+the neighbouring tooth, leaving a channel; the real implant screws into
+the plan and the ghost fades; an abutment and a zirconia crown go on and
+the gum fills back in. Beside it the price builds up with the steps:
+X-Nav placement **₹80,000 per implant, including guides and surgical
+printing**, zirconia crown **₹18,000**, total **₹98,000** for one implant
+with a crown -- as he gave them to the user on 16 Oct. The same three
+figures are also rows in `priceList` (Implants). Layout notes: on a phone
+the section keeps `pb-24` so the total clears the fixed contact bar; on
+screens under 860px tall the intro, note and button hide
+(`[@media(max-height:860px)]:hidden`) so the steps and price fit a 768px
+laptop. Poster `public/posters/sachdeva-xnav.webp` was rendered outside
+the app (RoomEnvironment light, so it is brighter than the live scene);
+re-save with `?poster` for an exact match. CONFIRM the clinical wording.
+
+**Robotic full-mouth section (16 Oct 2026):** a fourth WebGL story,
+placed after the "Technique matters more than material" feature and before
+the testimonials -- apart from the other 3D stories, per the rule above.
+`RoboticStory.tsx` / `RobotScene.tsx` / `robotModel.ts` /
+`lib/clinic/robotRuntime.ts` (`ROBOT_STEPS = [0, 0.2, 0.58, 0.76]`),
+settings in `robotic` in `sachdeva.ts`. Both jaws, built with archModel's
+`sweep` / `rounded` / `toothPositions` / `SIZE` (exported for this); the
+upper jaw is the lower one with `scale.y = -1`, held wide open
+(`UPPER_OPEN = 4.6`) for the surgery and closed into a bite
+(`UPPER_CLOSED = 2.42`) at the end. Story: a scan sheet passes over both
+jaws and the twelve implant sites show as gold plans; a robotic arm (two
+links, simple two-link IK with the elbow bending up, tool along each
+implant's axis) visits all twelve sites, lower then upper, carrying each
+implant in; a titanium frame seats on each arch; zirconia prostheses go
+on and the jaws close. Prices: **₹8,00,000 per arch** (robotic implant
+surgery, zirconia prosthesis reinforced with a titanium frame, digital
+scans, photogrammetry, surgical guides and the complete digital treatment
+protocol), **₹16,00,000 both arches** -- as he gave them on 16 Oct; also
+rows in `priceList`. Poster `public/posters/sachdeva-robotic.webp`,
+rendered outside the app like the X-Nav one. CONFIRM the clinical wording.
+
+**Shared priced-story panel:** X-Nav and robotic now share their page
+half, `PricedStory.tsx` (steps, price rows lighting by `from`, the total
+on the last step, phone and short-screen layout rules); `NavStory` and
+`RoboticStory` only pass in their lazy scene, runtime, steps and camera.
+Both are typed by `PricedStoryConfig` in `lib/clinic/types.ts`. A new
+priced 3D story is a model + scene + runtime + a ten-line wrapper.
+
 **Prices (15 Oct 2026):** he told the user by phone to take his pricing
 from `www.delhidental.com/charges` (another clinic's published list). The
 pricing beat in the 3D story and the full `priceList` section (ten

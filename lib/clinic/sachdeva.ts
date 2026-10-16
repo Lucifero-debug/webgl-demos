@@ -275,6 +275,57 @@ export const sachdeva: ClinicConfig = {
     poster: "/posters/sachdeva-arch.webp",
     cta: "Ask about full-arch implants",
   },
+  // X-Nav computer-navigated implant surgery, in 3D. Prices as he gave
+  // them to the user on 16 Oct 2026; CONFIRM the clinical wording.
+  navigated: {
+    label: "X-Nav navigated implant surgery, in 3D",
+    title: "Placed exactly where it was planned.",
+    body: "With X-Nav, the implant is planned on your 3D scan first. During surgery a camera tracks the drill and your jaw in real time, so the drill follows the plan to a fraction of a millimetre, clear of the nerve.",
+    steps: [
+      { title: "Planned in 3D on your scan", detail: "The implant's position, angle and depth are set on screen, clear of the nerve, before anything is done." },
+      { title: "The drill is navigated, live", detail: "X-Nav tracks the drill and the jaw together and guides each move along the planned path." },
+      { title: "The implant goes in as planned", detail: "Placed at the planned depth and angle: precise, minimally invasive, and quicker to heal." },
+      { title: "A zirconia crown goes on top", detail: "A strong, natural-looking zirconia crown completes the tooth." },
+    ],
+    prices: [
+      {
+        item: "X-Nav implant placement",
+        note: "Per implant, including guides and surgical printing",
+        price: "₹80,000",
+        from: 2,
+      },
+      { item: "Zirconia crown", note: "Per crown", price: "₹18,000", from: 3 },
+    ],
+    total: { item: "One implant with a zirconia crown", price: "₹98,000" },
+    note: "Your exact plan and quote are confirmed at your consultation.",
+    poster: "/posters/sachdeva-xnav.webp",
+    cta: "Ask about X-Nav implants",
+  },
+  // Full-mouth robotic rehabilitation, in 3D. Prices and inclusions as he
+  // gave them to the user on 16 Oct 2026; CONFIRM the clinical wording.
+  robotic: {
+    label: "Full-mouth robotic implants, in 3D",
+    title: "A whole new mouth, placed by a robot.",
+    body: "For patients losing most of their teeth in both jaws: every implant is placed by a robotic arm, exactly to a digital plan, and each arch gets a zirconia prosthesis reinforced with a titanium frame.",
+    steps: [
+      { title: "Scanned and planned digitally", detail: "Digital scans and photogrammetry record both jaws, and every implant is planned on screen first." },
+      { title: "The robot places every implant", detail: "A robotic arm places each implant at the planned position, angle and depth, in both jaws." },
+      { title: "A titanium frame on each arch", detail: "A titanium (Ti) frame joins the implants in each jaw, for strength that lasts." },
+      { title: "Zirconia teeth, top and bottom", detail: "A zirconia prosthesis goes over each frame: a complete, fixed set of teeth in both jaws." },
+    ],
+    prices: [
+      {
+        item: "Robotic full-arch rehabilitation, per arch",
+        note: "Robotic implant surgery, zirconia prosthesis on a titanium frame, digital scans, photogrammetry, surgical guides and the complete digital treatment protocol",
+        price: "₹8,00,000",
+        from: 2,
+      },
+    ],
+    total: { item: "Both arches, upper and lower", price: "₹16,00,000" },
+    note: "Your exact plan and quote are confirmed at your consultation.",
+    poster: "/posters/sachdeva-robotic.webp",
+    cta: "Ask about full-mouth robotic implants",
+  },
   // His own images, sent on 15 Oct 2026. Figures as printed on them.
   features: [
     {
@@ -447,6 +498,15 @@ export const sachdeva: ClinicConfig = {
           { item: "Nobel Biocare Replace Select implant, straight abutment", price: "₹35,000 per implant", usd: "$369 per implant" },
           { item: "Nobel Biocare Active implant, straight abutment", price: "₹45,000 per implant", usd: "$474 per implant" },
           { item: "NobelGuide computer-guided surgical stent", price: "₹40,000 per jaw", usd: "$422 per jaw" },
+          // As he gave them on 16 Oct 2026 (see `navigated` above).
+          { item: "X-Nav computer-navigated implant placement, including guides and surgical printing", price: "₹80,000 per implant" },
+          { item: "X-Nav implant with a zirconia crown (₹80,000 + ₹18,000 crown)", price: "₹98,000 per tooth" },
+          // As he gave them on 16 Oct 2026 (see `robotic` above).
+          {
+            item: "Full-mouth robotic rehabilitation: zirconia prosthesis on a titanium frame, with digital scans, photogrammetry, surgical guides and the complete digital protocol",
+            price: "₹8,00,000 per arch",
+          },
+          { item: "Full-mouth robotic rehabilitation, both arches", price: "₹16,00,000" },
           // From his own older page, not the list he pointed to. CONFIRM.
           { item: "All-on-4, full arch on four implants", price: "₹1,60,000 per arch" },
           { item: "Sinus lift", price: "₹50,000 per side", usd: "$527 per side" },

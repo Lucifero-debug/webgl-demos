@@ -52,7 +52,7 @@ export function archFrame(u: number) {
  * in the arch's own frame: (outward, up) for an angle s round the section.
  * Closed at both ends by shrinking the section to nothing.
  */
-function sweep(
+export function sweep(
   u0: number,
   u1: number,
   section: (s: number) => [outward: number, up: number],
@@ -86,7 +86,7 @@ function sweep(
 }
 
 /** A soft, rounded section: |cos|^e and |sin|^e give a squarish ellipse. */
-const rounded = (halfWidth: number, bottom: number, top: number, e = 0.6) => (s: number): [number, number] => {
+export const rounded = (halfWidth: number, bottom: number, top: number, e = 0.6) => (s: number): [number, number] => {
   const c = Math.cos(s);
   const n = Math.sin(s);
   const mid = (top + bottom) / 2;
@@ -94,6 +94,11 @@ const rounded = (halfWidth: number, bottom: number, top: number, e = 0.6) => (s:
   // Running the angle backwards keeps the triangles facing outwards.
   return [halfWidth * Math.sign(c) * Math.abs(c) ** e, mid - half * Math.sign(n) * Math.abs(n) ** e];
 };
+
+/*
+  sweep, rounded, toothPositions and SIZE are exported for robotModel.ts,
+  which builds two full arches the same way.
+*/
 
 /** The jaw: gum over bone, crest at GUM_TOP. */
 export const GUM_TOP = 0.3;
@@ -119,7 +124,7 @@ export const SITES = [
   { u: 0.78, tilt: 30 },
 ];
 
-type ToothKind = "molar" | "premolar" | "canine" | "incisor";
+export type ToothKind = "molar" | "premolar" | "canine" | "incisor";
 
 /** Twelve teeth from one end to the other: no third molars on a bridge. */
 const TEETH: ToothKind[] = [
@@ -137,7 +142,7 @@ const TEETH: ToothKind[] = [
   "molar",
 ];
 /** Width along the arch, depth across it, height; crown geometry is 1 x 0.92 x 0.72. */
-const SIZE: Record<ToothKind, [along: number, across: number, tall: number]> = {
+export const SIZE: Record<ToothKind, [along: number, across: number, tall: number]> = {
   molar: [1.0, 1.0, 0.95],
   premolar: [0.72, 0.85, 1.05],
   canine: [0.7, 0.78, 1.35],
@@ -145,7 +150,7 @@ const SIZE: Record<ToothKind, [along: number, across: number, tall: number]> = {
 };
 
 /** Each tooth's u, packed shoulder to shoulder along the arch. */
-function toothPositions(u0: number, u1: number) {
+export function toothPositions(u0: number, u1: number) {
   // Arc length along u, sampled.
   const samples = 400;
   const lengths = [0];

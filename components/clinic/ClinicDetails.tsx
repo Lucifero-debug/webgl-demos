@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import ArchStory from "@/components/clinic/ArchStory";
+import NavStory from "@/components/clinic/NavStory";
+import RoboticStory from "@/components/clinic/RoboticStory";
 import EnquiryForm from "@/components/clinic/EnquiryForm";
 import { PhoneMark, WhatsAppMark } from "@/components/clinic/marks";
 import type { ClinicConfig } from "@/lib/clinic/types";
@@ -310,6 +312,8 @@ export default function ClinicDetails({ config }: { config: ClinicConfig }) {
     socials,
     features,
     arch,
+    navigated,
+    robotic,
     clinic,
     ctaHref,
     contact,
@@ -476,6 +480,12 @@ export default function ClinicDetails({ config }: { config: ClinicConfig }) {
         </section>
       )}
 
+      {/* X-Nav navigated surgery in 3D, its price building up beside it:
+          the clinic's technology, shown at work. Kept apart from the
+          full-arch story on purpose -- two 3D stories back to back blur
+          into one and neither lands (the client's call, 16 Oct 2026). */}
+      {navigated && <NavStory nav={navigated} ctaHref={ctaHref} />}
+
       {gallery && (
         <section className={section}>
           <div className="mx-auto max-w-[72rem]">
@@ -618,6 +628,11 @@ export default function ClinicDetails({ config }: { config: ClinicConfig }) {
       )}
 
       {featuresAfter("reasons")}
+
+      {/* Full-mouth robotic rehabilitation in 3D, its price building up
+          beside it. Well apart from the other 3D stories: two back to back
+          blur into one (the client's call, 16 Oct 2026). */}
+      {robotic && <RoboticStory story={robotic} ctaHref={ctaHref} />}
 
       {testimonials && testimonials.videos.length > 0 && (
         <section className={section}>
