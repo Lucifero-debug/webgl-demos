@@ -323,11 +323,18 @@ export const sachdeva: ClinicConfig = {
 
         CONFIRM the two fees on it: ₹1,500 matches the consultation fee
         the Visit section already quotes, but ₹3,500 for the
-        comprehensive package appears nowhere else on this page.
+        comprehensive consultation appears nowhere else on this page.
+
+        Replaced 16 Oct 2026 with his newer version ("Teleconsultation with
+        a Delhi dentist": Consultation ₹1,500; Comprehensive Consultation
+        ₹3,500, treatment plan & workflow; "Book your appointment:
+        9818894041"). Note the booking number printed on it is 98188 94041,
+        NOT the 92662 36271 this page's buttons use -- see "ASK HIM WHICH
+        NUMBER" in PROJECT-CONTEXT.md.
       */
       image: "/doctor/teleconsultation.webp",
       imageAlt:
-        "Teleconsultation and teledentistry with Dr. Rajat Sachdeva, a Delhi dentist: consultation ₹1,500, comprehensive package ₹3,500",
+        "Teleconsultation with a Delhi dentist, Dr. Rajat Sachdeva, MDS, MBA: consultation ₹1,500; comprehensive consultation with treatment plan and workflow ₹3,500. Book on 98188 94041.",
       tall: true,
     },
     {

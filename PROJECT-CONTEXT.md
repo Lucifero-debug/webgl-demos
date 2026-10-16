@@ -3,6 +3,10 @@
 Everything an assistant (or a person) needs to work on this repo without
 having seen it built. Read this first, then the file you intend to change.
 
+**Last verified against the code: 16 October 2026** (HEAD `9584dcc`,
+"Payroll MS"). Update this file in the same commit as any change to a
+demo's structure, a client instruction, or a gotcha.
+
 ---
 
 ## 1. What this is
@@ -203,6 +207,16 @@ Each of these cost real time. Do not undo them.
    for the same reason.
 10. **8K textures cost about 180 MB of GPU memory.** Phones get the 4K
     version (see the `highRes` check in `GlobeScene.tsx`).
+11. **Artwork saved on solid black is not "a logo with a black
+    background".** Every pixel is already its own colour multiplied by
+    how much of the glyph covers it, so the black *is* the alpha channel,
+    not a background to key out. Take coverage from the brightest
+    channel, then **un-premultiply** (`rgb / coverage`) or the edges come
+    out muddy; a small floor (~0.07) clears the compression noise in the
+    black. Doing that is what fixed the client logo, which had been
+    hidden behind a black chip to stop its edges showing on the page's
+    near-black ground -- which only made the box look deliberate. The
+    same applies to any gold-on-black asset a client sends.
 
 ---
 
@@ -251,14 +265,17 @@ from him: degrees, implant system, and the real "completed" counts
 (his site shows "0+").
 
 **His images (15 Oct 2026):** he sent his logo and four pictures, now in
-`public/doctor/`: `logo-dentistry.webp` (the header logo: his stacked
-logo re-cut with the mark beside the name so it reads at header size;
-the original crop is `logo-full.webp`), `why-top.webp` (his online
-presence infographic), `full-arch.webp` (full-arch in 10 days poster),
-`composite.webp` (a teaching-video cover) and `results.webp` (him beside
-a finished smile). The first three go in `features` (picture-led
-sections, placed with `after`); the last sits beside the before-and-after
-heading. Brand is now "Dr. Rajat Sachdeva's Dentistry", as on the logo.
+`public/doctor/`: `logo-dentistry.webp` (the header logo, superseded --
+see **The logo** below; the original crop is `logo-full.webp`),
+`why-top.webp` (his online presence infographic), `full-arch.webp`
+(full-arch in 10 days poster), `composite.webp` (a teaching-video cover)
+and `results.webp` (him beside a finished smile). They go in `features`
+(picture-led sections, placed with `after`), except `results.webp`, which
+sits beside the before-and-after heading. Brand is now "Dr. Rajat
+Sachdeva's Dentistry", as on the logo. `full-arch.webp` is **no longer
+shown** -- he asked for it off the page -- and the teleconsultation
+poster took its place beside that copy; the file stays in `public/doctor/`
+in case he wants it back.
 
 **More 3D (15 Oct 2026):** a second WebGL scene, the full-arch story
 (`ArchStory.tsx` page half, `ArchScene.tsx` scene, model in
@@ -286,6 +303,83 @@ confirm which with him). All-on-4 is the one addition, from his older
 page. Get that instruction confirmed in writing before the page
 goes live under his name.
 
+**Getting in touch (15 Oct 2026):** he asked for "prominent
+call-to-action buttons for WhatsApp Chat, Call for Consultation, and an
+Enquiry Form", with the form going to WhatsApp rather than email,
+"as people are generally more comfortable using WhatsApp for quick
+communication". Built as:
+
+- `lib/clinic/whatsapp.ts` -- `waLink`, `telLink`, `enquiryMessage`,
+  `enquiryProblems`. Its header is blunt about the limit, and so is the
+  form: **a page on Vercel cannot SEND a WhatsApp message.** That needs
+  the WhatsApp Business API, a verified sender and approved templates.
+  What it does instead is open WhatsApp with the message already written,
+  for the patient to tap send. Better here, because the thread then opens
+  from the patient's own number and the clinic can simply reply -- but if
+  the patient closes WhatsApp without sending, nothing arrives and nobody
+  knows. Revisit if he wants every enquiry logged.
+- `ContactBar.tsx` -- a fixed bar: bottom of the screen on a phone,
+  bottom-right pills on a desktop. Fixed rather than more buttons in the
+  page because a patient convinced three minutes into the story is
+  wherever the story put them, not beside a button.
+- `EnquiryForm.tsx` -- the form itself, in **one** place, rendered both
+  by the bar's dialog and by the `#enquiry` section in `ClinicDetails`.
+  Two copies of a form drift, and then what reaches the clinic depends on
+  which one the patient found. Square, hairline-bordered boxes matching
+  the page; `marks.tsx` holds the two inline glyphs it shares with the bar.
+- The `#enquiry` section: heading and his recognition poster on one side,
+  the form on the other, the WhatsApp/Call buttons **under the form**.
+  That last bit is load-bearing -- with the buttons, hours and website
+  link stacked on the left as well, the poster had to shrink to about
+  200px to keep the columns level, at which point its own type is
+  unreadable.
+
+**ASK HIM WHICH NUMBER.** His site lists 98188 94041, 88609 40947 and
+92662 36271, and its own WhatsApp button goes to **98188 94041** -- not
+the **92662 36271** that `ctaHref` here has always used. Everything on
+this page is on 92662 36271 so nothing moved silently. A chat opened on
+the wrong number is an enquiry nobody sees.
+
+**The logo (15 Oct 2026):** his logo file is gold artwork on *solid*
+black with no alpha, so on this page's near-black ground its edges drew a
+visible rectangle; the header used to hide that behind a black chip,
+which just made the box look deliberate. Keyed to transparency instead
+(`logo-dentistry-cut.webp`) -- see gotcha 11. The lockup is 5.35:1 with
+three lines of type, so on a phone it is dropped for the mark alone
+(`logo-mark.webp`, a 256px square, via the new optional `logoMark`); at
+`md` and up the full lockup returns at `h-14`/`lg:h-16`. The logo also
+links to his site now, which is the one place on this page it was not
+already linked (`BrandLink` in `Clinic.tsx` -- note it goes inert once
+the story hands the screen over, or it would be an invisible but
+clickable link in the tab order).
+
+**Later pictures (15 Oct 2026):**
+
+- `pointing-2.webp` -- the treatments photo. He sent a green-screen
+  original; `scripts/` has no copy, the keying was done ad hoc with a
+  RELATIVE greenness measure, `(g - max(r,b)) / g`, because the screen
+  was lit brightly on one side and nearly black in a corner, so an
+  absolute "how green is this" test keyed the lit area and left the dark
+  corner opaque.
+- `recognition.webp` -- his "Recognized among leading names" poster. New
+  optional `recognition.poster { image, alt, caption }`. It lives under
+  `recognition` because that is what it is about, but it is **drawn in
+  the enquiry section**: among the award trophies it was the same claim
+  told twice, and beside the form it answers "who am I writing to?" at
+  the moment a patient decides whether to hand over their number. Note it
+  names two outlets the `press` list does not (Delhi Times, Business
+  World) and says "Forbes India" where the list says "Forbes".
+- `teleconsultation.webp` -- his teleconsultation poster, now beside the
+  full-arch copy. **The picture and the words are not about the same
+  thing**: if that section is meant to become the teleconsultation one,
+  its label, title and points need rewriting with it. CONFIRM its two
+  fees: ₹1,500 matches the consultation fee the Visit section quotes, but
+  **₹3,500 for the "comprehensive package" appears nowhere else.**
+
+`features[].image` and `imageAlt` are **optional** as of this work: with
+no image the section drops to a single column at a reading width rather
+than leaving the text stretched beside an empty half.
+
 - Every clinical claim and price in that file is marked `CONFIRM` and came
   from his website. **Nothing should go live in his name until he has
   approved it**: the prices change, and dental advertising rules in India
@@ -298,16 +392,43 @@ If this page ever moves to his own domain, remove the `robots` line in
 `app/implants/page.tsx` and make sure the prices have been confirmed in
 writing.
 
+**Tried and reverted (15 Oct 2026) -- do not redo without asking.** After
+the full-arch scene went in, a further pass put a 3D treatment on most of
+the remaining sections (an ambient WebGL backdrop behind them, in
+`Ambient.tsx` / `AmbientScene.tsx` / `ambientModel.ts`). The user asked for
+it to be reverted, and the repo was put back to commit `3432720`; the
+contact bar, enquiry form, logo and later pictures above were all built
+after that. What this section describes is what is in the code now; the
+ambient files were parked outside the repo and have since been deleted. If
+more 3D is wanted again, start from the user's request, not from that
+attempt.
+
 ---
 
 ## 9. What is unfinished
 
-- Posters missing for `/travel`, `/clinic`, `/implants`, `/property`.
-  Capture with `?poster`.
+- `/property` has no poster (`public/posters/` has `alder-runner`,
+  `meridian`, `arden`, `sachdeva` and `sachdeva-arch` only). Capture it with
+  `?poster`. The existing `meridian`, `arden` and `sachdeva` posters predate
+  later scene changes and should be re-saved before anyone judges the first
+  paint; `sachdeva-arch` was rendered outside the app (see section 8).
 - Mobile layouts have never been checked on a real device. Known risks: the
   property and clinic price beats may overflow a short screen, and the
   implant's dimension line is not hidden on portrait as the part labels are.
-- `/clinic` and `/property` are `ready: false` on the index page.
+  On `/implants`, the header's logo swap below `md` (mark instead of the
+  full lockup) is **reasoned, not seen** -- the Chrome extension's window
+  resize does not change the viewport on this machine, so it was only
+  verified at desktop width. Check it at 390px.
+- `/implants`, waiting on Dr. Sachdeva: which WhatsApp number the buttons
+  should use, the ₹3,500 teleconsultation package fee, whether the
+  full-arch section should become a teleconsultation one now that its
+  picture is his teleconsultation poster, and the Delhi Times / Business
+  World / "Forbes India" wording in `press`.
+- The enquiry form on `/implants` hands over to WhatsApp and cannot know
+  whether the patient pressed send (see section 8); nothing records the
+  attempt. A form that posts to a server would, if he ever wants that.
+- `/property` is `ready: false` on the index page (`/shop`, `/travel` and
+  `/clinic` are listed; `/implants` is deliberately not).
 - The property demo has no normal maps (only colour); the roof pool and the
   neighbouring blocks are plain.
 - Lighthouse was last run on `/shop` before the other demos existed.
