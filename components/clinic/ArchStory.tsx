@@ -84,6 +84,7 @@ export default function ArchStory({
           <CanvasStage
             camera={camera}
             frameloop="demand"
+            deferUntilNear
             posterFit="contain"
             poster={arch.poster}
             posterAlt="Full-arch implants in 3D: four implants and a fixed bridge"

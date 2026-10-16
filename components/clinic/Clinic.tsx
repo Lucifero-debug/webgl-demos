@@ -337,6 +337,10 @@ export default function Clinic({ config }: { config: ClinicConfig }) {
           <CanvasStage
             camera={camera}
             frameloop="always"
+            // Stop drawing once the story hands the screen to the page:
+            // this stage only fades out, and would otherwise render unseen
+            // for the rest of the visit, under the other 3D sections.
+            paused={atEnd}
             posterFit="contain"
             poster={config.poster}
             posterAlt={`${brand}: a dental implant with its crown`}

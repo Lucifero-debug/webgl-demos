@@ -17,7 +17,7 @@ import type { ReactNode } from "react";
  */
 
 export type StageCanvasProps = {
-  frameloop: "always" | "demand";
+  frameloop: "always" | "demand" | "never";
   dpr: [number, number];
   camera: { position: [number, number, number]; fov: number };
   /**

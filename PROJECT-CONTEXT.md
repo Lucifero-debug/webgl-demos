@@ -218,6 +218,26 @@ Each of these cost real time. Do not undo them.
     near-black ground -- which only made the box look deliberate. The
     same applies to any gold-on-black asset a client sends.
 
+12. **A page with several 3D stories must not start them all at load.**
+    `/implants` has four canvases. Each one is a WebGL context, an
+    environment map and its model built on the main thread, so mounting
+    them together made the first seconds slow, and the hero -- a FIXED
+    stage that only fades out when its story ends -- went on drawing 60
+    times a second, unseen, for the whole visit. `CanvasStage` now has two
+    opt-in props: `deferUntilNear` (the scene is not fetched, built or
+    given a context until the stage is within ~1.5 screens; its poster
+    loads lazily at low priority; once mounted it stays) and `paused`
+    (frameloop "never" while true). The clinic hero passes
+    `paused={atEnd}`; ArchStory and PricedStory pass `deferUntilNear`.
+    Measured in Chrome (16 Oct 2026): 1 canvas and 1 poster at load
+    instead of 4 and 4; the hero draws nothing once scrolled past and
+    resumes on the way back. Two traps found doing it: `loading` must be
+    written BEFORE `src` on the poster `<img>` (React sets attributes in
+    order), and the idle callback that mounts a scene now has a 1200 ms
+    timeout, because a page that never goes idle never mounts it. Test
+    this in a VISIBLE browser tab: a hidden pane runs no animation frames
+    and no IntersectionObserver, so nothing deferred ever mounts there.
+
 ---
 
 ## 7. Assets and licences
@@ -487,3 +507,10 @@ attempt.
 - The property demo has no normal maps (only colour); the roof pool and the
   neighbouring blocks are plain.
 - Lighthouse was last run on `/shop` before the other demos existed.
+- `/implants` still loads some pictures straight from his site
+  (`SITE` in `sachdeva.ts`): the trophies are 750x1000 PNGs shown at
+  about 108x144, and `award.png` is 1667x943. Run
+  `node scripts/fetch-sachdeva.mjs`, point `SITE` at `/doctor/site`, and
+  convert them to right-sized WebP for a further, easy saving. Check
+  speed on the production build (Vercel), not `npm run dev`, which ships
+  unminified code.

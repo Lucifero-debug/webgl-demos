@@ -122,6 +122,23 @@ type Props = {
    * needs "always".
    */
   frameloop?: "always" | "demand";
+  /**
+   * Stop drawing altogether while true (frameloop "never"); drawing resumes
+   * when it goes false. For a fixed stage that fades out but stays in the
+   * page -- the clinic's hero -- which otherwise keeps rendering 60 times a
+   * second, unseen, under everything the visitor scrolls on to.
+   */
+  paused?: boolean;
+  /**
+   * Don't fetch the 3D code, build the scene or open a WebGL context until
+   * the stage is within about a screen and a half of the viewport, and load
+   * the poster lazily. For scenes far down a long page (the clinic's
+   * full-arch, X-Nav and robotic stories): without it, every one of them
+   * builds at page load and competes with the hero for the first seconds.
+   * Once mounted it stays mounted; those scenes stop drawing on their own
+   * when off screen.
+   */
+  deferUntilNear?: boolean;
 };
 
 export default function CanvasStage({
@@ -134,8 +151,13 @@ export default function CanvasStage({
   toneMapping,
   posterFit = "cover",
   frameloop = "demand",
+  paused = false,
+  deferUntilNear = false,
 }: Props) {
   const [mounted, setMounted] = useState(false);
+  // Near the viewport yet? Always true for a stage that does not defer.
+  const [near, setNear] = useState(!deferUntilNear);
+  const stage = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const [blocked, setBlocked] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -187,7 +209,29 @@ export default function CanvasStage({
     );
   };
 
+  // One-way: once near, the scene mounts and stays.
   useEffect(() => {
+    if (near) return;
+    const node = stage.current;
+    if (!node || typeof IntersectionObserver === "undefined") {
+      setNear(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setNear(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "150% 0px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [near]);
+
+  useEffect(() => {
+    if (!near) return;
     if (!supportsWebGL() || prefersReducedMotion()) {
       setBlocked(true);
       return;
@@ -196,13 +240,16 @@ export default function CanvasStage({
     const idle = window.requestIdleCallback;
 
     if (typeof idle === "function") {
-      const handle = idle(() => setMounted(true));
+      // Capped: on a page that never goes idle (a busy phone, a background
+      // tab) an idle callback with no timeout can wait indefinitely, and the
+      // visitor scrolls past a poster that never becomes the scene.
+      const handle = idle(() => setMounted(true), { timeout: 1200 });
       return () => window.cancelIdleCallback?.(handle);
     }
 
     const timer = window.setTimeout(() => setMounted(true), 240);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [near]);
 
   /**
    * Drop the canvas and fade the poster back in. Clearing `ready` matters for
@@ -220,13 +267,18 @@ export default function CanvasStage({
   }, []);
 
   return (
-    <div className={`relative h-full w-full ${className}`}>
+    <div ref={stage} className={`relative h-full w-full ${className}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={posterImage}
+        // The first screen's poster is the page's largest paint: fetch it
+        // first. A deferred stage's poster waits until it is scrolled near.
+        // `loading` goes BEFORE `src`: React sets attributes in order, and an
+        // image whose src is set first has already started downloading.
+        loading={deferUntilNear ? "lazy" : undefined}
+        fetchPriority={deferUntilNear ? "low" : "high"}
         src={poster}
         alt={posterAlt}
-        fetchPriority="high"
         decoding="async"
         onError={(event) => {
           event.currentTarget.style.visibility = "hidden";
@@ -243,7 +295,7 @@ export default function CanvasStage({
           {/* Outer Suspense: waiting for the 3D code itself to download. */}
           <Suspense fallback={null}>
             <StageCanvas
-              frameloop={frameloop}
+              frameloop={paused ? "never" : frameloop}
               dpr={[1, maxDpr]}
               camera={camera}
               toneMapping={toneMapping}

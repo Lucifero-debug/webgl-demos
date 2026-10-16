@@ -98,6 +98,7 @@ export default function PricedStory({
           <CanvasStage
             camera={camera}
             frameloop="demand"
+            deferUntilNear
             posterFit="contain"
             poster={nav.poster}
             posterAlt={posterAlt}
